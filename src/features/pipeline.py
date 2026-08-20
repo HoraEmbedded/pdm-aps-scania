@@ -13,6 +13,9 @@ from src.features.histograms import HistogramFeatures
 
 
 def build_imputer(strategy: str = "median", add_indicator: bool = True):
+    """Return the imputation step, or None when the model handles NaN itself."""
+    if strategy is None:
+        return None
     if strategy == "median":
         return SimpleImputer(strategy="median", add_indicator=add_indicator)
     if strategy == "zero":
@@ -40,7 +43,9 @@ def build_pipeline(
             ),
         ))
 
-    steps.append(("imputer", build_imputer(imputation)))
+    imputer = build_imputer(imputation)
+    if imputer is not None:
+        steps.append(("imputer", imputer))
 
     if scale:
         steps.append(("scaler", StandardScaler()))
