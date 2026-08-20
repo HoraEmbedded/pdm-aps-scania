@@ -34,3 +34,5 @@ N_SPLITS = 5
 MISSING_DROP_THRESHOLD = 0.70   # columns emptier than this are dropped
 CORRELATION_THRESHOLD = 0.95    # above this, keep only one of the pair
 
+
+METRICS_DIR = DATA_DIR.parent / "reports" / "metrics"
