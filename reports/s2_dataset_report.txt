@@ -1,0 +1,38 @@
+RAPPORT DATASET POUR LA NOTE D2
+============================================================
+
+[1] Volumetrie
+Train : 60000 lignes x 171 colonnes
+Test  : 16000 lignes x 171 colonnes
+Positifs train : 1000 (1.67%)
+Positifs test  : 375 (2.34%)
+Ratio de desequilibre : 1 pour 59
+
+[2] Structure de l'espace de variables
+Groupes d'histogrammes detectes : 7
+Colonnes appartenant a un histogramme : 70
+Compteurs isoles : 100
+Prefixes des histogrammes : ag, ay, az, ba, cn, cs, ee
+
+[3] Valeurs manquantes
+Taux global : 8.33% des cellules
+Colonnes sans aucune valeur manquante : 1
+Colonnes > 20% manquantes : 24
+Colonnes > 50% manquantes : 8
+Colonnes > 70% manquantes : 7
+Les 5 plus trouees :
+    br_000     82.1%
+    bq_000     81.2%
+    bp_000     79.6%
+    bo_000     77.2%
+    cr_000     77.2%
+
+Taux moyen de NaN, colonnes d'histogrammes : 1.13%
+Taux moyen de NaN, compteurs isoles         : 13.38%
+
+[4] Metrique de cout Scania sur le jeu de test
+Ne rien signaler : 187500
+Tout inspecter   : 156250
+Reference a battre : 156250
+Seuil theorique optimal : 0.0196
+Repere challenge IDA 2016 (1er) : 9920
