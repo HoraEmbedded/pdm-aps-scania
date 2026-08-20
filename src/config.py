@@ -26,3 +26,11 @@ TARGET = "class"
 POSITIVE_LABEL = "pos"
 NA_TOKEN = "na"
 
+# Evaluation protocol, frozen in week 3 and never changed afterwards
+VAL_SIZE = 0.20
+N_SPLITS = 5
+
+# Preprocessing thresholds, justified by the week 3 EDA
+MISSING_DROP_THRESHOLD = 0.70   # columns emptier than this are dropped
+CORRELATION_THRESHOLD = 0.95    # above this, keep only one of the pair
+
