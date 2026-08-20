@@ -38,3 +38,13 @@ def baseline_costs(y_true) -> dict:
         "always_positive": total_cost(y_true, np.ones_like(y_true)),
     }
 
+
+def breakeven_rate(cost_fp: int = COST_FP, cost_fn: int = COST_FN) -> float:
+    """Failure rate at which both naive rules cost the same.
+
+    Equals the Bayes-optimal threshold: below this rate, doing nothing is the
+    cheaper naive rule; above it, inspecting everything is.
+    """
+    return cost_fp / (cost_fp + cost_fn)
+    
+    
