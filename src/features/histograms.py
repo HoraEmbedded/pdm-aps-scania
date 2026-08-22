@@ -1,51 +1,66 @@
-"""Transformer extracting domain features from Scania histogram bins."""
+"""Feature engineering on the 7 histogram groups of the APS dataset.
 
-import re
+Each group holds 10 ordered bins of one distribution. Raw bins mix shape and
+scale; the derived features separate them, which is what actually carries the
+degradation signal.
+"""
+
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 
-HIST_PATTERN = re.compile(r"^([a-z]+)_(\d{3})$")
+from src.data.schema import histogram_groups
 
 
 class HistogramFeatures(BaseEstimator, TransformerMixin):
-    """Derive total counts, shares, and concentration metrics from bin groups."""
+    """Add shape descriptors for every histogram group.
 
-    def __init__(self, keep_raw_bins: bool = True):
+    keep_raw_bins : keep the original bin columns alongside the new features.
+                    True by default so tree models can still use them.
+    """
+
+    def __init__(self, keep_raw_bins: bool = True, min_bins: int = 10):
         self.keep_raw_bins = keep_raw_bins
+        self.min_bins = min_bins
 
     def fit(self, X, y=None):
-        X_df = pd.DataFrame(X)
-        groups = {}
-        for col in X_df.columns:
-            match = HIST_PATTERN.match(str(col))
-            if match:
-                prefix = match.group(1)
-                groups.setdefault(prefix, []).append(col)
-        self.hist_groups_ = {p: cols for p, cols in groups.items() if len(cols) > 1}
+        # Group detection depends only on column names, never on values,
+        # so there is no statistic learned here and no leakage risk.
+        self.groups_ = histogram_groups(X.columns, min_bins=self.min_bins)
+        self.feature_names_in_ = list(X.columns)
         return self
 
     def transform(self, X):
-        X_df = pd.DataFrame(X)
+        X = X.copy()
         derived = {}
 
-        # Suppress harmless NaN slice warnings during vectorized operations
-        with np.errstate(invalid="ignore", divide="ignore"):
-            for prefix, cols in self.hist_groups_.items():
-                bins = X_df[cols].to_numpy(dtype=float)
-                total = np.nansum(bins, axis=1)
-                derived[f"{prefix}_sum"] = total
+        for prefix, bins in self.groups_.items():
+            block = X[bins].to_numpy(dtype=float)
+            ranks = np.arange(block.shape[1])
 
-                shares = bins / np.where(total[:, None] == 0, np.nan, total[:, None])
-                derived[f"{prefix}_max_share"] = np.nanmax(shares, axis=1)
+            total = np.nansum(block, axis=1)
+            # Guard against division by zero on trucks with an empty histogram
+            safe_total = np.where(total > 0, total, np.nan)
+            shares = block / safe_total[:, None]
 
-                non_zero = np.sum(bins > 0, axis=1)
-                derived[f"{prefix}_active_bins"] = non_zero
+            mean_rank = np.nansum(shares * ranks, axis=1)
+            variance = np.nansum(shares * (ranks - mean_rank[:, None]) ** 2, axis=1)
 
-        derived_df = pd.DataFrame(derived, index=X_df.index)
+            with np.errstate(divide="ignore", invalid="ignore"):
+                entropy = -np.nansum(shares * np.log(shares + 1e-12), axis=1)
+            
+            
+            derived[f"{prefix}_total"] = total
+            derived[f"{prefix}_mean_rank"] = mean_rank
+            derived[f"{prefix}_std_rank"] = np.sqrt(variance)
+            derived[f"{prefix}_max_share"] = np.nanmax(shares, axis=1)
+            derived[f"{prefix}_entropy"] = entropy
+            derived[f"{prefix}_tail_ratio"] = shares[:, 0] + shares[:, -1]
 
-        if not self.keep_raw_bins:
-            all_hist_cols = [c for cols in self.hist_groups_.values() for c in cols]
-            X_df = X_df.drop(columns=all_hist_cols)
+        new_features = pd.DataFrame(derived, index=X.index)
 
-        return pd.concat([X_df, derived_df], axis=1)
+        if self.keep_raw_bins:
+            return pd.concat([X, new_features], axis=1)
+
+        raw_bins = [col for cols in self.groups_.values() for col in cols]
+        return pd.concat([X.drop(columns=raw_bins), new_features], axis=1)
