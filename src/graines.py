@@ -5,10 +5,10 @@ import random
 
 import numpy as np
 
-from src.config import SEED
+from src.config import GRAINE
 
 
-def set_seed(seed: int = SEED) -> int:
+def set_seed(seed: int = GRAINE) -> int:
     """Seed every random generator that can influence a result."""
     os.environ["PYTHONHASHSEED"] = str(seed)
     random.seed(seed)

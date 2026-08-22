@@ -1,38 +1,46 @@
-"""Central configuration: paths, seeds and business constants."""
+"""Central configuration: paths, seeds, cost matrix, protocol constants.
+
+Every module imports from here. No hard-coded value anywhere else.
+"""
 
 from pathlib import Path
 
-# Racine du projet = dossier parent de src/
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+RACINE = Path(__file__).resolve().parents[1]
 
-DATA_DIR = PROJECT_ROOT / "data"
-RAW_DIR = DATA_DIR / "raw"
-INTERIM_DIR = DATA_DIR / "interim"
-PROCESSED_DIR = DATA_DIR / "processed"
+# --- Chemins ---------------------------------------------------------------
+BRUT = RACINE / "data" / "raw"
+PREPARE = RACINE / "data" / "processed"
+FIGURES = RACINE / "reports" / "figures"
+MODELES = RACINE / "models"
 
-MODELS_DIR = PROJECT_ROOT / "models"
-REPORTS_DIR = PROJECT_ROOT / "reports"
-FIGURES_DIR = REPORTS_DIR / "figures"
+FICHIER_TRAIN = BRUT / "aps_failure_training_set.csv"
+FICHIER_TEST = BRUT / "aps_failure_test_set.csv"
 
-TRAIN_FILE = RAW_DIR / "aps_failure_training_set.csv"
-TEST_FILE = RAW_DIR / "aps_failure_test_set.csv"
+# --- Reproductibilité ------------------------------------------------------
+GRAINE = 42
 
-SEED = 42
+# --- Matrice de coût Scania ------------------------------------------------
+COUT_FP = 10       # inspection inutile à l'atelier
+COUT_FN = 500      # panne non détectée
 
-COST_FP = 10    # inspection inutile à l'atelier
-COST_FN = 500   # panne non détectée, camion immobilisé sur route
+# Rapport de coût. C'est LUI qui fixe la pondération des classes (D-11),
+# et non les fréquences observées qui donneraient 59:1.
+RAPPORT_COUT = COUT_FN / COUT_FP                 # 50.0
+PONDERATION = {0: 1, 1: RAPPORT_COUT}
 
-TARGET = "class"
-POSITIVE_LABEL = "pos"
-NA_TOKEN = "na"
+# Seuil de Bayes sur une probabilité calibrée. Sert de DIAGNOSTIC, jamais de
+# point de fonctionnement (D-11 §4).
+SEUIL_BAYES = COUT_FP / (COUT_FP + COUT_FN)      # 0.019608
 
-# Evaluation protocol, frozen in week 3 and never changed afterwards
-VAL_SIZE = 0.20
-N_SPLITS = 5
+# --- Protocole d'évaluation (figé) ----------------------------------------
+PART_VALIDATION = 0.20
+N_PLIS = 5
+N_PLIS_INTERNES = 3        # pour le réglage du seuil, correction 1
 
-# Preprocessing thresholds, justified by the week 3 EDA
-MISSING_DROP_THRESHOLD = 0.70   # columns emptier than this are dropped
-CORRELATION_THRESHOLD = 0.95    # above this, keep only one of the pair
+# --- Colonnes --------------------------------------------------------------
+CIBLE = "class"
+ETIQUETTE_POSITIVE = "pos"
+JETON_ABSENT = "na"
 
-
-METRICS_DIR = DATA_DIR.parent / "reports" / "metrics"
+# Seuil de sélection des colonnes informatives, écrit avant le calcul (D-09 §7).
+SEUIL_ECART = 0.10
