@@ -102,9 +102,9 @@ class ExtracteurAbsences:
         X["profondeur_g1"] = profondeur(X, self.groupe1_)
         for nom, (_, membres) in zip(self.noms_indicatrices_,
                                      sorted(self.sous_blocs_.items())):
-            # One flag per sub-block: the first member represents it, the
-            # block being homogeneous or near-homogeneous by construction
-            X[nom] = X[membres[0]].isna().astype(int)
+            # Majority rule: sub-blocks are not all homogeneous, so picking one
+            # member makes the flag depend on column ordering.
+            X[nom] = (X[membres].isna().mean(axis=1) >= 0.5).astype(int)
         return X
 
     def fit_transform(self, X, y):

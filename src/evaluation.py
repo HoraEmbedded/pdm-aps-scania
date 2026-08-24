@@ -27,7 +27,8 @@ def _proba(modele, X):
 
 
 def evalue(fabrique, X, y, nom: str = "", n_plis: int = N_PLIS,
-           n_internes: int = N_PLIS_INTERNES) -> pd.DataFrame:
+           n_internes: int = N_PLIS_INTERNES,
+           seuil_hors_echantillon: bool = True, n_jobs: int = -1):
     """Run the frozen protocol on one model. One row per fold.
 
     fabrique: a callable returning a FRESH untrained model each time.
@@ -42,11 +43,17 @@ def evalue(fabrique, X, y, nom: str = "", n_plis: int = N_PLIS,
         X_a, X_e = X.iloc[idx_app], X.iloc[idx_ev]
         y_a, y_e = y[idx_app], y[idx_ev]
 
-        # --- Seuil : réglé sur des probabilités HORS échantillon ---------
-        vc_interne = StratifiedKFold(n_splits=n_internes, shuffle=True,
-                                     random_state=GRAINE)
-        p_a = cross_val_predict(fabrique(), X_a, y_a, cv=vc_interne,
-                                method="predict_proba", n_jobs=-1)[:, 1]
+        # --- Seuil ---------------------------------------------------------
+        if seuil_hors_echantillon:
+            vc_interne = StratifiedKFold(n_splits=n_internes, shuffle=True,
+                                         random_state=GRAINE)
+            p_a = cross_val_predict(fabrique(), X_a, y_a, cv=vc_interne,
+                                    method="predict_proba", n_jobs=n_jobs)[:, 1]
+        else:
+            # ancienne version : probabilités en interne, pour comparaison
+            m = fabrique()
+            m.fit(X_a, y_a)
+            p_a = _proba(m, X_a)
         seuil, _ = meilleur_seuil(y_a, p_a)
 
         # --- Modèle final du pli, entraîné sur tout X_a ------------------
