@@ -1,0 +1,5 @@
+,cout,dispersion,detection,pannes_ratees,fausses_alertes,auc_pr,seuil
+"B, perte pondérée",8368.0,1007.6061,0.9462,8.6,406.8,0.7565,0.2312
+"D, focale pondérée",8430.0,686.5493,0.945,8.8,403.0,0.7538,0.319
+"A, référence",8550.0,1837.8656,0.9388,9.8,365.0,0.7573,0.2814
+"C, perte focale",9210.0,1780.8425,0.9412,9.4,451.0,0.7966,0.1532

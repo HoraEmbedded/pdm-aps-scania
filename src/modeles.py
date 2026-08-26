@@ -9,6 +9,7 @@ from sklearn.svm import SVC, LinearSVC
 from xgboost import XGBClassifier
 
 from src.config import GRAINE, PONDERATION, RAPPORT_COUT
+from sklearn.linear_model import SGDClassifier
 
 
 def regression_logistique(C: float = 0.01):
@@ -46,16 +47,27 @@ def svm_rbf(C: float = 1.0, gamma="scale"):
                probability=True, random_state=GRAINE)
 
 
+
 class PerceptronKeras(BaseEstimator, ClassifierMixin):
-    """Keras MLP behind the scikit-learn interface, so evalue can use it."""
+    """Keras MLP behind the scikit-learn interface, so evalue can use it.
+
+    perte : "standard" uses binary cross-entropy with class weighting, which
+            is the benchmark configuration. Any other value must be a callable
+            returning a Keras-compatible loss.
+    ponderation : whether to pass class_weight to fit. Must be False when the
+            loss already carries the cost matrix, otherwise the ratio enters
+            the chain twice, which is the error decision D-11 corrects.
+    """
 
     def __init__(self, couches=(64, 32), dropout=0.3, lr=1e-3,
-                 epochs=30, batch=512):
+                 epochs=20, batch=512, perte="standard", ponderation=True):
         self.couches = couches
         self.dropout = dropout
         self.lr = lr
         self.epochs = epochs
         self.batch = batch
+        self.perte = perte
+        self.ponderation = ponderation
 
     def fit(self, X, y):
         from tensorflow import keras
@@ -70,16 +82,18 @@ class PerceptronKeras(BaseEstimator, ClassifierMixin):
             m.add(keras.layers.Dense(u, activation="relu"))
             m.add(keras.layers.Dropout(self.dropout))
 
-        # start at the base rate rather than at 0.5
         biais = float(np.log(y.sum() / (len(y) - y.sum())))
         m.add(keras.layers.Dense(
             1, activation="sigmoid",
             bias_initializer=keras.initializers.Constant(biais)))
 
-        m.compile(optimizer=keras.optimizers.Adam(self.lr),
-                  loss="binary_crossentropy")
+        perte = ("binary_crossentropy" if self.perte == "standard"
+                 else self.perte)
+        m.compile(optimizer=keras.optimizers.Adam(self.lr), loss=perte)
+
         m.fit(X, y, epochs=self.epochs, batch_size=self.batch,
-              class_weight=PONDERATION, verbose=0)
+              class_weight=PONDERATION if self.ponderation else None,
+              verbose=0)
         self.modele_ = m
         return self
 

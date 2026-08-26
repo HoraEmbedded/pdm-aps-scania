@@ -103,3 +103,25 @@ def affiche(resultats: pd.DataFrame, nom: str = "") -> None:
     print(f"  seuil dépondéré moyen : "
           f"{resultats['seuil_depondere'].mean():.4f}  (repère 0,0196)\n")
     print(resume(resultats).to_string())
+
+def evalue_repete(fabrique, X, y, nom: str = "", n_repetitions: int = 6,
+                  n_plis: int = N_PLIS, n_internes: int = N_PLIS_INTERNES,
+                  n_jobs: int = -1):
+    """Repeat the whole cross-validation with different fold partitions.
+
+    Each repetition uses a different seed for the outer split, so the paired
+    comparison rests on n_repetitions * n_plis measurements instead of n_plis.
+    The standard error on a paired difference falls as the square root of the
+    number of repetitions, which is what makes small effects detectable.
+    """
+    import pandas as pd
+
+    morceaux = []
+    for repetition in range(n_repetitions):
+        graine = GRAINE + repetition
+        vc = StratifiedKFold(n_splits=n_plis, shuffle=True, random_state=graine)
+        r = _evalue_avec_vc(fabrique, X, y, vc, nom, n_internes, n_jobs, graine)
+        r["repetition"] = repetition
+        morceaux.append(r)
+    return pd.concat(morceaux, ignore_index=True)
+
