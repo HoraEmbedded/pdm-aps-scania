@@ -1,6 +1,7 @@
 .venv/
 __pycache__/
 *.py[cod]
+.ipynb_checkpoints/
 
 data/raw/*
 data/interim/*
@@ -10,9 +11,8 @@ data/processed/*
 models/*
 !models/.gitkeep
 
-.ipynb_checkpoints/
-reports/figures/*
-!reports/figures/.gitkeep
+# reports/figures is tracked on purpose: the figures are a deliverable.
+
 *.log
 .DS_Store
 .idea/

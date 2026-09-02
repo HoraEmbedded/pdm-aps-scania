@@ -1,46 +1,37 @@
-"""Central configuration: paths, seeds, cost matrix, protocol constants.
-
-Every module imports from here. No hard-coded value anywhere else.
-"""
+"""Single source of truth: paths, seed, cost matrix, protocol constants."""
 
 from pathlib import Path
 
-RACINE = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[1]
 
-# --- Chemins ---------------------------------------------------------------
-BRUT = RACINE / "data" / "raw"
-PREPARE = RACINE / "data" / "processed"
-FIGURES = RACINE / "reports" / "figures"
-MODELES = RACINE / "models"
+RAW_DIR = ROOT / "data" / "raw"
+PROCESSED_DIR = ROOT / "data" / "processed"
+FIGURES_DIR = ROOT / "reports" / "figures"
+MODELS_DIR = ROOT / "models"
 
-FICHIER_TRAIN = BRUT / "aps_failure_training_set.csv"
-FICHIER_TEST = BRUT / "aps_failure_test_set.csv"
+TRAIN_FILE = RAW_DIR / "aps_failure_training_set.csv"
+TEST_FILE = RAW_DIR / "aps_failure_test_set.csv"
 
-# --- Reproductibilité ------------------------------------------------------
-GRAINE = 42
+SEED = 42
 
-# --- Matrice de coût Scania ------------------------------------------------
-COUT_FP = 10       # inspection inutile à l'atelier
-COUT_FN = 500      # panne non détectée
+COST_FP = 10
+COST_FN = 500
 
-# Rapport de coût. C'est LUI qui fixe la pondération des classes (D-11),
-# et non les fréquences observées qui donneraient 59:1.
-RAPPORT_COUT = COUT_FN / COUT_FP                 # 50.0
-PONDERATION = {0: 1, 1: RAPPORT_COUT}
+# The class weighting comes from the cost ratio, not from the observed class
+# frequencies, which would give 59:1 (decision D-11).
+COST_RATIO = COST_FN / COST_FP
+CLASS_WEIGHT = {0: 1, 1: COST_RATIO}
 
-# Seuil de Bayes sur une probabilité calibrée. Sert de DIAGNOSTIC, jamais de
-# point de fonctionnement (D-11 §4).
-SEUIL_BAYES = COUT_FP / (COUT_FP + COUT_FN)      # 0.019608
+# Diagnostic reference on a calibrated probability, never an operating point.
+BAYES_THRESHOLD = COST_FP / (COST_FP + COST_FN)
 
-# --- Protocole d'évaluation (figé) ----------------------------------------
-PART_VALIDATION = 0.20
-N_PLIS = 5
-N_PLIS_INTERNES = 3        # pour le réglage du seuil, correction 1
+VALIDATION_SHARE = 0.20
+N_FOLDS = 5
+N_INNER_FOLDS = 3
 
-# --- Colonnes --------------------------------------------------------------
-CIBLE = "class"
-ETIQUETTE_POSITIVE = "pos"
-JETON_ABSENT = "na"
+TARGET = "class"
+POSITIVE_LABEL = "pos"
+MISSING_TOKEN = "na"
 
-# Seuil de sélection des colonnes informatives, écrit avant le calcul (D-09 §7).
-SEUIL_ECART = 0.10
+# Written before the computation it selects on (decision D-09).
+GAP_THRESHOLD = 0.10
