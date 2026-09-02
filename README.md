@@ -184,23 +184,6 @@ change to the chain makes it fail.
 The specification is the project's contractual document. Coverage as of the
 last commit:
 
-| ID | Requirement | State |
-|---|---|---|
-| EF01 | Loading and exploratory analysis | done, notebooks 00 and 01 |
-| EF02 | Reproducible preparation chain | done, `scripts/build_dataset.py` |
-| EF03 | Four classical models | done, notebook 02 |
-| EF04 | One Keras neural network | done, notebooks 02 and 04 |
-| EF05 | Common protocol and Scania cost | done, `src/evaluation.py` |
-| EF06 | Comparative benchmark and justified choice | done, no winner declared between the top two |
-| EF07 | Serialisation of the selected model | not done |
-| EF08 | Prediction demonstrator | not done |
-| EF09 | Real-time stream simulation | dropped, first item on the abandonment order |
-| ENF01 | Python 3 and venv under Ubuntu | done |
-| ENF02 | Git, code in English, documentation in French | done |
-| ENF03 | Reproducibility: seeds, pinned versions, notebooks | done |
-| ENF04 | Runs without a GPU | done, `tensorflow-cpu` |
-| ENF05 | Docker image of the demonstrator | not done, second item on the abandonment order |
-| ENF06 | Single prediction under 1 s | not measured |
 
 ## Remaining work
 
@@ -209,11 +192,11 @@ The project is in progress. This list is the project plan's, in its order.
 1. Arbitrate between the two finalists by opening the 12 000 reserved rows once,
    which also measures how far the selection overfitted the cross-validated
    estimate it was selected on.
-2. Calibration curves on the five models, then freeze the final model (EF07).
+2. Calibration curves on the five models, then freeze the final model.
 3. Open the official test set once, compare against the published figures, and
    run the error analysis and feature-importance study.
-4. Prediction demonstrator (EF08) and single-prediction latency (ENF06).
-5. Container image (ENF05), install notes, and a reproducibility check run by a
+4. Prediction demonstrator (EF08) and single-prediction latency.
+5. Container image, install notes, and a reproducibility check run by a
    third party.
 6. Final report and defence material.
 
@@ -233,7 +216,7 @@ The project is in progress. This list is the project plan's, in its order.
   the retained configuration is known. Both are documented in
   [docs/hyperparameter_grids.md](docs/hyperparameter_grids.md), and no script
   replays either.
-- **No serialised model and no demonstrator.** EF07 and EF08 are not covered.
+- **No serialised model and no demonstrator.** 
 - **Seeds are fixed, which makes results reproducible, not robust.** The
   repeated cross-validation over 6 partitions is what supports the
   significance claims.
