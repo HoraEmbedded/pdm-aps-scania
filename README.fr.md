@@ -217,8 +217,7 @@ Le projet est en cours. Cette liste est celle du plan de projet, dans son ordre.
   cas sont documentés dans
   [docs/hyperparameter_grids.md](docs/hyperparameter_grids.md), et aucun script
   ne rejoue ni l'une ni l'autre.
-- **Aucun modèle sérialisé et aucun démonstrateur.** EF07 et EF08 ne sont pas
-  couverts.
+- **Aucun modèle sérialisé et aucun démonstrateur.**
 - **Les graines sont figées, ce qui rend les résultats reproductibles et non
   robustes.** C'est la validation croisée répétée sur 6 partitions qui soutient
   les affirmations de significativité.
