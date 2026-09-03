@@ -1,0 +1,17 @@
+{
+  "model": "gradient boosting",
+  "threshold": 0.0023719617165625095,
+  "cost": 11370,
+  "recall": 0.96,
+  "precision": 0.4819277108433735,
+  "auc": 0.9942949546666667,
+  "auc_pr": 0.9266595558204367,
+  "TP": 360,
+  "FP": 387,
+  "FN": 15,
+  "TN": 15238,
+  "reference": 156250,
+  "saving_pct": 92.72,
+  "diagnostic_optimal_threshold": 0.0010823749471455812,
+  "diagnostic_cost_at_that_threshold": 10060
+}
