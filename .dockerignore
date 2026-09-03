@@ -1,0 +1,26 @@
+# Local environment
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Data: never in the image
+data/raw/
+data/interim/
+data/processed/*.csv
+
+# Exploratory work
+notebooks/
+reports/
+docs/
+
+# Git and tooling
+.git/
+.gitignore
+.github/
+.ipynb_checkpoints/
+
+# System
+.DS_Store
+.idea/
+.vscode/
