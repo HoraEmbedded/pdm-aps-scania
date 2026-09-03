@@ -1,5 +1,2 @@
-comparison,difference,standard_error,significant
-V1 against V0,-22,99,no
-"depth contribution, with aa_000",-61,139,no
-"depth contribution, without aa_000",-19,122,no
-aa_000 contribution,20,132,no
+comparison,measurements,difference,standard_error,detection_floor,significant
+V1 vs V0,30,35,131,267,False

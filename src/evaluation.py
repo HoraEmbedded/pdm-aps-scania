@@ -136,3 +136,52 @@ def report(results: pd.DataFrame, name: str = "") -> None:
     print(f"  mean unweighted threshold : "
           f"{results['unweighted_threshold'].mean():.4f}\n")
     print(summarise(results).to_string())
+    
+    
+def _results_path(name: str):
+    from src.config import ROOT
+    directory = ROOT / "reports" / "runs"
+    directory.mkdir(parents=True, exist_ok=True)
+    return directory / f"{name}.csv"
+
+
+def save_results(results, name: str) -> None:
+    """Persist per-fold results so a closed kernel costs nothing.
+
+    Training is the expensive part; tables and figures downstream are display.
+    Keeping the raw fold-level results on disk means correcting a chart never
+    requires retraining a model.
+    """
+    frame = results if isinstance(results, pd.DataFrame) else pd.concat(
+        [r.assign(model=key) for key, r in results.items()], ignore_index=True)
+    frame.to_csv(_results_path(name), index=False)
+    print(f"saved {len(frame)} rows to reports/runs/{name}.csv")
+
+
+def load_results(name: str, split_by_model: bool = True):
+    """Reload results saved by save_results."""
+    frame = pd.read_csv(_results_path(name))
+    if not split_by_model:
+        return frame
+    return {key: part.reset_index(drop=True)
+            for key, part in frame.groupby("model", sort=False)}
+
+
+def cached_evaluate(factory, X, y, name: str, cache: str, **kwargs):
+    """Evaluate, or reload a previous run of the same name.
+
+    Pass refresh=True to force recomputation.
+    """
+    refresh = kwargs.pop("refresh", False)
+    path = _results_path(cache)
+    if path.exists() and not refresh:
+        stored = load_results(cache)
+        if name in stored:
+            return stored[name]
+
+    result = evaluate(factory, X, y, name=name, **kwargs)
+    existing = load_results(cache) if path.exists() else {}
+    existing[name] = result
+    save_results(existing, cache)
+    return result
+
