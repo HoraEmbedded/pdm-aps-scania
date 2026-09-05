@@ -28,17 +28,30 @@ from src.seeding import set_seed  # noqa: E402
 
 
 def build_variant(name, X_raw, y, extractor):
-    """V0 drops heavily incomplete columns and builds nothing.
-    V1 is the retained decision. V2 keeps one flag per informative column."""
+    """V0 drops heavily incomplete columns.
+    V1 is the retained decision (depth + counters).
+    V1_no_depth and V1_no_counter are ablations for the factorial design.
+    V1_base lacks both.
+    V2 keeps one flag per informative column."""
     X = X_raw.copy()
 
     if name == "V0":
         X = X.drop(columns=X.columns[X.isna().mean() > 0.10].tolist())
         group1, unscaled = [], []
-    elif name == "V1":
+    elif name.startswith("V1"):
         X = extractor.transform(X)
         group1 = extractor.group1_
         unscaled = ["depth_g1"] + extractor.flag_names_
+
+        if "no_depth" in name or name == "V1_base":
+            X = X.drop(columns=["depth_g1"])
+            if "depth_g1" in unscaled:
+                unscaled.remove("depth_g1")
+        if "no_counter" in name or name == "V1_base":
+            X = X.drop(columns=extractor.flag_names_)
+            for f in extractor.flag_names_:
+                if f in unscaled:
+                    unscaled.remove(f)
     elif name == "V2":
         informative = extractor.group1_ + extractor.group2_
         for column in informative:
@@ -60,8 +73,11 @@ def main() -> None:
     X_raw, _, y_fit, _ = train_validation_split()
     extractor = MissingnessEncoder().fit(X_raw, y_fit)
 
+    # Définition des 6 variantes nécessaires
+    variants = ["V0", "V1", "V2", "V1_no_depth", "V1_no_counter", "V1_base"]
     runs = {}
-    for name in ["V0", "V1"]:
+
+    for name in variants:
         X = build_variant(name, X_raw, y_fit, extractor)
         print(f"{name}: {X.shape}, running {args.repeats} repeats")
         runs[name] = evaluate_repeated(lambda: random_forest(300), X, y_fit,
@@ -71,25 +87,41 @@ def main() -> None:
 
     save_results(runs, f"ablation_r{args.repeats}")
 
-    difference = runs["V1"]["cost"].values - runs["V0"]["cost"].values
-    n = len(difference)
-    error = difference.std(ddof=1) / np.sqrt(n)
-    critical = stats.t.ppf(0.975, df=n - 1)
+    # Définition des 6 comparaisons appariées
+    comparisons_def = [
+        ("V1 vs V0", "V1", "V0"),
+        ("V2 vs V1", "V2", "V1"),
+        ("V2 vs V0", "V2", "V0"),
+        ("Profondeur avec compteur", "V1", "V1_no_depth"),
+        ("Profondeur sans compteur", "V1_no_counter", "V1_base"),
+        ("Compteur d'usage seul", "V1_no_depth", "V1_base"),
+    ]
 
-    print("\nV1 minus V0")
-    print(f"  measurements     : {n}")
-    print(f"  mean difference  : {difference.mean():+,.0f}")
-    print(f"  standard error   : {error:,.0f}")
-    print(f"  detection floor  : {critical * error:,.0f}")
-    print(f"  significant      : "
-          f"{'yes' if abs(difference.mean()) > critical * error else 'no'}")
+    results = []
+    print("\n--- Résultats des comparaisons appariées ---")
+    for label, model_a, model_b in comparisons_def:
+        diff = runs[model_a]["cost"].values - runs[model_b]["cost"].values
+        n = len(diff)
+        error = diff.std(ddof=1) / np.sqrt(n)
+        critical = stats.t.ppf(0.975, df=n - 1)
+        is_significant = abs(diff.mean()) > critical * error
 
-    pd.DataFrame([{
-        "comparison": "V1 vs V0", "measurements": n,
-        "difference": round(difference.mean()), "standard_error": round(error),
-        "detection_floor": round(critical * error),
-        "significant": abs(difference.mean()) > critical * error,
-    }]).to_csv(ROOT / "reports" / "paired_comparisons.csv", index=False)
+        print(f"\n{label} ({model_a} minus {model_b})")
+        print(f"  measurements     : {n}")
+        print(f"  mean difference  : {diff.mean():+,.0f}")
+        print(f"  standard error   : {error:,.0f}")
+        print(f"  detection floor  : {critical * error:,.0f}")
+        print(f"  significant      : {'yes' if is_significant else 'no'}")
+
+        results.append({
+            "comparison": label, "measurements": n,
+            "difference": round(diff.mean()), "standard_error": round(error),
+            "detection_floor": round(critical * error),
+            "significant": is_significant,
+        })
+
+    # Sauvegarde des 6 comparaisons dans le fichier CSV final
+    pd.DataFrame(results).to_csv(ROOT / "reports" / "paired_comparisons.csv", index=False)
 
 
 if __name__ == "__main__":
