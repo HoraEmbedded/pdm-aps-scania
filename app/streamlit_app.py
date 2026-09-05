@@ -42,9 +42,18 @@ st.caption(f"Model: {predictor.name}. Frozen threshold: "
 
 # --- Sidebar: the economic trade-off, made visible -----------------------
 st.sidebar.header("Operating point")
-threshold = st.sidebar.slider(
-    "Decision threshold", 0.0001, 0.5000,
-    value=float(predictor.threshold), step=0.0001, format="%.4f")
+
+# The frozen threshold is 0.0023719..., which a linear slider with a 0.0001
+# step cannot represent: Streamlit snaps it away and the demonstrator opens on
+# the wrong operating point. A log-spaced grid containing the exact value fixes
+# it, and matches how the threshold actually behaves, over three decades.
+grid = sorted({round(v, 6) for v in np.logspace(-4, -0.3, 60)}
+              | {round(predictor.threshold, 6)})
+
+threshold = st.sidebar.select_slider(
+    "Decision threshold", options=grid,
+    value=round(predictor.threshold, 6),
+    format_func=lambda v: f"{v:.5f}")
 
 st.sidebar.markdown(
     f"""
@@ -107,8 +116,11 @@ with tab_file:
 
         st.caption(
             f"Expected cost at this threshold: {economics['expected_cost']:,.0f} "
-            "units. This is an expectation under the model's own probabilities, "
-            "so it is only as trustworthy as its calibration.")
+            "units, under the model's own probabilities. It rises as the "
+            "threshold falls on this sample, and that is expected: the frozen "
+            "threshold minimises cost on a workshop population carrying 1.67% "
+            "APS failures, not on a 300-vehicle sample that happens to carry "
+            "one.")
 
         results = pd.DataFrame({
             "vehicle": range(1, len(frame) + 1),
@@ -121,10 +133,28 @@ with tab_file:
                            results.to_csv(index=False).encode("utf-8"),
                            "verdicts.csv", "text/csv")
 
-        st.bar_chart(pd.Series(np.sort(probability)[::-1]).clip(upper=0.5),
-                     height=180)
-        st.caption("Predicted probability per vehicle, ranked. The flatter the "
-                   "left shoulder, the more vehicles the model is unsure about.")
+        # The ranked-probability bar chart shows nothing on a linear scale when
+        # almost every vehicle sits near zero, and clipping at 0.5 hid the one
+        # vehicle above it. The cost curve is what the slider actually moves
+        # along, so it is the useful visual here.
+        import matplotlib.pyplot as plt
+
+        sweep = np.unique(np.quantile(probability, np.linspace(0.5, 1.0, 200)))
+        costs = [predictor.expected_cost(probability, t)["expected_cost"]
+                 for t in sweep]
+
+        fig, ax = plt.subplots(figsize=(8, 3))
+        ax.plot(sweep, costs, color="#2c7fb8", lw=1.6)
+        ax.axvline(threshold, color="#d7301f", ls="--", lw=1.4,
+                   label=f"current threshold, {threshold:.5f}")
+        ax.axvline(predictor.threshold, color="#41ab5d", ls=":", lw=1.4,
+                   label=f"frozen threshold, {predictor.threshold:.5f}")
+        ax.set_xscale("log")
+        ax.set_xlabel("decision threshold, log scale")
+        ax.set_ylabel("expected cost on this fleet")
+        ax.legend(fontsize=7)
+        ax.grid(alpha=0.25)
+        st.pyplot(fig)
 
 # --- Tab 2: one vehicle, typed in ---------------------------------------
 with tab_manual:
