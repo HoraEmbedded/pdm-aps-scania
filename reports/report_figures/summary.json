@@ -1,0 +1,17 @@
+{
+  "checksum": 313696.0,
+  "shape": [
+    48000,
+    180
+  ],
+  "group1": 8,
+  "group2": 56,
+  "mute": 106,
+  "sub_blocks": 9,
+  "usage_factor": 328,
+  "duplicate_absence_pairs": 760,
+  "naming_anomalies": [
+    "am_0",
+    "ec_00"
+  ]
+}

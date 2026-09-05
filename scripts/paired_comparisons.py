@@ -30,8 +30,8 @@ from src.seeding import set_seed  # noqa: E402
 def build_variant(name, X_raw, y, extractor):
     """V0 drops heavily incomplete columns.
     V1 is the retained decision (depth + counters).
-    V1_no_depth and V1_no_counter are ablations for the factorial design.
-    V1_base lacks both.
+    V1_no_depth and V1_no_flags are ablations for the factorial design.
+    V1_raw lacks both.
     V2 keeps one flag per informative column."""
     X = X_raw.copy()
 
@@ -43,11 +43,11 @@ def build_variant(name, X_raw, y, extractor):
         group1 = extractor.group1_
         unscaled = ["depth_g1"] + extractor.flag_names_
 
-        if "no_depth" in name or name == "V1_base":
+        if "no_depth" in name or name == "V1_raw":
             X = X.drop(columns=["depth_g1"])
             if "depth_g1" in unscaled:
                 unscaled.remove("depth_g1")
-        if "no_counter" in name or name == "V1_base":
+        if "no_flags" in name or name == "V1_raw":
             X = X.drop(columns=extractor.flag_names_)
             for f in extractor.flag_names_:
                 if f in unscaled:
@@ -74,7 +74,12 @@ def main() -> None:
     extractor = MissingnessEncoder().fit(X_raw, y_fit)
 
     # Définition des 6 variantes nécessaires
-    variants = ["V0", "V1", "V2", "V1_no_depth", "V1_no_counter", "V1_base"]
+    
+    # The plan crosses two constructed variables, the depth and the sub-block flags.
+    # Column aa_000 is present in all four conditions: this plan therefore says
+    # nothing about redundancy between the depth and the usage counter.
+    
+    variants = ["V0", "V1", "V2", "V1_no_depth", "V1_no_flags", "V1_raw"]
     runs = {}
 
     for name in variants:
@@ -89,12 +94,12 @@ def main() -> None:
 
     # Définition des 6 comparaisons appariées
     comparisons_def = [
-        ("V1 vs V0", "V1", "V0"),
-        ("V2 vs V1", "V2", "V1"),
-        ("V2 vs V0", "V2", "V0"),
-        ("Profondeur avec compteur", "V1", "V1_no_depth"),
-        ("Profondeur sans compteur", "V1_no_counter", "V1_base"),
-        ("Compteur d'usage seul", "V1_no_depth", "V1_base"),
+        ("V1 vs V0", "V0", "V1"),
+        ("V2 vs V1", "V1", "V2"),
+        ("V2 vs V0", "V0", "V2"),
+        ("depth, flags present", "V1_no_depth", "V1"),
+        ("depth, flags absent", "V1_raw", "V1_no_flags"),
+        ("flags alone", "V1_raw", "V1_no_depth"),
     ]
 
     results = []

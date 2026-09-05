@@ -1,0 +1,3 @@
+group,n_patterns,n_possible,n_if_nested,nested_share,n_exceptions
+group1,9,256,9,1.0,0
+group2,115,72057594037927936,57,0.9195833333333333,3860
