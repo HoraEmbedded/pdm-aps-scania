@@ -20,7 +20,7 @@ imputation à zéro pour les huit colonnes du groupe 1 et par la médiane pour l
 autres, normalisation des 170 colonnes de mesure. Toutes les quantités estimées
 proviennent de la partie d'apprentissage seule.
 
-Somme de contrôle du tableau final : 313 695,00.
+Somme de contrôle du tableau final : 313 696,00.
 
 ## 2. Rôle des deux ensembles
 

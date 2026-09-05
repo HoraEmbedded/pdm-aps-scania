@@ -44,7 +44,7 @@ une mesure de discipline, pas un argument de robustesse, et il faut distinguer
 les deux côtés.
 
 Du côté du groupe 1, le seuil tombe dans une vraie rupture : le huitième écart
-le plus grand vaut 0,325 et le neuvième 0,028, soit un facteur supérieur à dix.
+le plus grand vaut 0,323 et le neuvième 0,026, soit un facteur supérieur à dix.
 Tout seuil placé entre les deux sélectionne exactement les mêmes huit colonnes,
 le choix de la valeur est donc sans effet.
 
@@ -66,7 +66,7 @@ La conséquence est la partie utile : un seul entier, le nombre de colonnes
 absentes, résume tout le bloc sans perte. C'est la variable `depth_g1`.
 
 **Le groupe 2 n'est pas emboîté, et c'est pour cela qu'il est traité
-autrement.** Le même test appliqué à ses 56 colonnes échoue : 119 motifs
+autrement.** Le même test appliqué à ses 56 colonnes échoue : 115 motifs
 observés là où un bloc emboîté en produirait 57, et 8 % des lignes violent la
 règle. Une variable de profondeur sur un bloc non emboîté ramènerait des motifs
 réellement différents sur le même entier. Le groupe 2 reçoit donc une
@@ -199,7 +199,7 @@ Deux écarts sont mesurés dans ce projet, et il est tentant d'en faire un rappo
 Il ne faut pas.
 
 **L'écart entre familles de modèles est mesurable.** Moyenne des deux modèles à
-base d'arbres, 6 645, contre moyenne des deux modèles linéaires, 9 462 : 2 817
+base d'arbres, 6 645, contre moyenne des deux modèles linéaires, 9 462 : 2 725
 unités. C'est une différence de moyennes entre familles, pas une comparaison
 appariée, mais l'écart dépasse largement les dispersions individuelles et la
 marge de départage de 2 000 unités.
@@ -209,7 +209,7 @@ appariée V1 contre V0 donne 220 unités pour une erreur type de 329. Elle est
 déclarée non significative, comme les cinq autres.
 
 **Le rapport entre les deux n'existe donc pas.** Écrire que la préparation pèse
-treize fois moins que le choix du modèle, 2 817 contre 220, traite un nombre non
+treize fois moins que le choix du modèle, 2 725 contre 220, traite un nombre non
 significatif comme une quantité. Le 220 n'est pas un petit effet mesuré, c'est
 un effet dont la mesure ne permet pas de dire s'il est positif, nul ou négatif.
 La formulation correcte est dissymétrique : le choix de la famille de modèles
@@ -238,7 +238,7 @@ exactement le coût de la règle constante "tout signaler" à l'échelle d'un pl
 parfait sur le rappel et sans valeur sur le critère qui compte.
 
 **Sur la forêt aléatoire**, dont le seuil ne dégénérait pas complètement, le
-coût passe de 41 050 à 6 714, soit le facteur 6,1.
+coût passe de 41 050 à 6 926, soit le facteur 6,1.
 
 **La correction.** Le seuil est réglé sur des probabilités hors échantillon,
 obtenues par une validation croisée interne à 3 plis à l'intérieur de chaque pli
