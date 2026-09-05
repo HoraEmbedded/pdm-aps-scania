@@ -6,7 +6,7 @@ services:
     image: pdm-aps:1.0
     container_name: pdm-aps-demo
     ports:
-      - "8502:8501"
+      - "8501:8501"
     volumes:
       # Read-only: the container can read CSV files the user drops here
       - ./data/raw:/app/data/raw:ro

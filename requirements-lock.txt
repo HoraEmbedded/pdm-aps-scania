@@ -71,7 +71,7 @@ matplotlib==3.11.1
 matplotlib-inline==0.2.2
 mdurl==0.1.2
 mistune==3.3.4
-ml_dtypes==0.6.0
+ml-dtypes==0.4.1
 namex==0.1.0
 narwhals==2.24.0
 nbclient==0.11.0
@@ -79,10 +79,8 @@ nbconvert==7.17.1
 nbformat==5.11.1
 nest-asyncio2==1.7.2
 notebook_shim==0.2.4
-numpy==2.5.2
+numpy==1.26.4
 nvidia-nccl-cu13==2.31.2
-onnx==1.22.0
-onnxruntime==1.29.0
 opt_einsum==3.4.0
 optree==0.20.0
 packaging==26.3
@@ -122,7 +120,6 @@ seaborn==0.13.2
 Send2Trash==2.1.0
 setuptools==84.0.0
 six==1.17.0
-skl2onnx==1.20.0
 sklearn-compat==0.1.6
 smmap==5.0.3
 soupsieve==2.9.2
