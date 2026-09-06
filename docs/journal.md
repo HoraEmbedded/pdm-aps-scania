@@ -248,7 +248,7 @@ les paires de colonnes parfaitement corrélées en absence se comptent par
 dizaines et non deux.
 
 **Défaut de nommage dans le plan factoriel.** Les conditions portaient des noms
-qui décrivaient autre chose que leur contenu. `V1_no_counter` compte 171
+qui décrivaient autre chose que leur contenu. `V1_no_flags` compte 171
 colonnes, soit 180 moins 9 : ce qu'elle retire, ce sont les neuf indicatrices de
 sous-bloc, et non la colonne `aa_000`. Le plan croise donc la profondeur et les
 indicatrices, ce qui est un plan légitime, mais le libellé « compteur d'usage »
