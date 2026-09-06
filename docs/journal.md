@@ -9,7 +9,7 @@ Analyse exploratoire du jeu APS Scania. Mise en évidence de 64 colonnes dont le
 motif d'absence porte de l'information, réparties en deux groupes de sens
 opposés. Emboîtement parfait du premier groupe : huit colonnes, neuf motifs
 observés sur 256 possibles, aucune exception. Mise en relation avec la seule
-colonne complète du fichier, dont la médiane varie d'un facteur 329 selon la
+colonne complète du fichier, dont la médiane varie d'un facteur 328 selon la
 profondeur d'absence, à classe constante. Décisions D-09 et D-10.
 
 ## 12 août 2026
