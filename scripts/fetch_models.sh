@@ -6,7 +6,7 @@
 
 set -euo pipefail
 
-REPO="${MODEL_REPO:-<your-account>/pdm-aps-scania}"
+REPO="${MODEL_REPO:-HoraEmbedded/pdm-aps-scania}"
 TAG="${MODEL_TAG:-weights-v1}"
 MODELS_DIR="$(cd "$(dirname "$0")/.." && pwd)/models"
 

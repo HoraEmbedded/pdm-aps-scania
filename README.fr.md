@@ -325,10 +325,10 @@ absence.
 
 ```bash
 ./scripts/fetch_models.sh
-docker compose up --build          # puis http://localhost:8502
+docker compose up --build          # puis http://localhost:8501
 ```
 
-Le fichier compose publie le port 8501 du conteneur sur le port 8502 de
+Le fichier compose publie le port 8501 du conteneur sur le port 8501 de
 l'hôte. Un `docker run -p 8501:8501` le sert sur 8501.
 
 Les poids ne sont pas versionnés dans Git. Ils sont copiés dans l'image et

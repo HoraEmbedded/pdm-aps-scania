@@ -310,10 +310,10 @@ required for anything else, and its section 2 skips itself when absent.
 
 ```bash
 ./scripts/fetch_models.sh
-docker compose up --build          # then http://localhost:8502
+docker compose up --build          # then http://localhost:8501
 ```
 
-The compose file publishes the container's 8501 on the host's 8502. A plain
+The compose file publishes the container's 8501 on the host's 8501. A plain
 `docker run -p 8501:8501` serves it on 8501 instead.
 
 Weights are not versioned in Git. They are copied into the image and published
