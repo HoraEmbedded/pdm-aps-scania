@@ -1,10 +1,41 @@
 services:
+  # The model-serving boundary. The demonstrator also loads the model
+  # in-process for its three main tabs; the "Via API" tab exists to show what a
+  # network client sees, not to replace the in-process path. Going fully
+  # remote would cost the offline demonstration for no gain here.
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pdm-aps:1.0
+    container_name: pdm-aps-api
+    command:
+      ["uvicorn", "src.api:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    restart: unless-stopped
+
+  # The human-facing demonstrator. Talks to `api` over HTTP via API_URL,
+  # exactly like an external client would -- it no longer loads the model
+  # in-process. See app/streamlit_app.py, tab "Via API".
   demonstrator:
     build:
       context: .
       dockerfile: Dockerfile
     image: pdm-aps:1.0
     container_name: pdm-aps-demo
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      - API_URL=http://api:8000
     ports:
       - "8501:8501"
     volumes:
