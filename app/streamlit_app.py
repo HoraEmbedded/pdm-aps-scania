@@ -4,6 +4,7 @@ Run: streamlit run app/streamlit_app.py
 """
 
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -12,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np
 import pandas as pd
+import requests
 import streamlit as st
 
 from src.config import BAYES_THRESHOLD, COST_FN, COST_FP, MODELS_DIR
@@ -19,6 +21,11 @@ from src.data import load
 from src.inference import Predictor
 
 st.set_page_config(page_title="APS failure triage", layout="wide")
+
+# The "Via API" tab talks to src/api.py over HTTP instead of the in-process
+# Predictor. Defaults to localhost for a bare `streamlit run`; docker-compose
+# overrides this to the api service's internal hostname (see compose file).
+API_URL = os.environ.get("API_URL", "http://localhost:8000")
 
 
 @st.cache_resource
@@ -74,8 +81,8 @@ The frozen value is the one that minimised cost on data the model never saw.
 if st.sidebar.button("Reset to the frozen threshold"):
     st.rerun()
 
-tab_file, tab_manual, tab_model = st.tabs(
-    ["Batch from a file", "Single vehicle", "About the model"])
+tab_file, tab_manual, tab_model, tab_api = st.tabs(
+    ["Batch from a file", "Single vehicle", "About the model", "Via API"])
 
 # --- Tab 1: a fleet at a time -------------------------------------------
 with tab_file:
@@ -193,3 +200,62 @@ with tab_model:
         "The threshold was tuned by inner cross-validation on the fitting rows, "
         "never on the data used to report a result. The official test set was "
         "opened once, on this model, after it was frozen.")
+
+# --- Tab 4: the same model, called over HTTP -----------------------------
+with tab_api:
+    st.subheader("Client externe (démonstration réseau)")
+    st.caption(
+        f"Cet onglet n'importe pas le modèle : il envoie une requête HTTP à "
+        f"{API_URL}/predict, comme le ferait un poste d'atelier, une passerelle "
+        "embarquée, ou tout autre système qui n'a ni scikit-learn ni le fichier "
+        "du modèle. La latence mesurée ici inclut le réseau, pas seulement le "
+        "calcul — c'est la latence qu'un client réel observerait.")
+
+    try:
+        api_health = requests.get(f"{API_URL}/health", timeout=2).json()
+        st.success(f"API disponible sur {API_URL} — modèle chargé : "
+                   f"{api_health['model']}")
+        api_reachable = True
+    except requests.RequestException as exc:
+        st.error(
+            f"API injoignable sur {API_URL}. Démarrer le service avec "
+            "`uvicorn src.api:app --host 0.0.0.0 --port 8000`, ou "
+            f"`docker compose up` si les deux services sont configurés. "
+            f"Détail : {exc}")
+        api_reachable = False
+
+    if api_reachable:
+        shown = predictor.raw_columns[:12]
+        values = {}
+        columns = st.columns(4)
+        for index, name in enumerate(shown):
+            with columns[index % 4]:
+                entry = st.text_input(name, value="", key=f"api_field_{name}")
+                values[name] = float(entry) if entry.strip() else None
+
+        if st.button("Prédire via l'API", type="primary"):
+            start = time.perf_counter()
+            response = requests.post(
+                f"{API_URL}/predict",
+                json={"readings": values, "threshold": threshold},
+                timeout=5)
+            elapsed = (time.perf_counter() - start) * 1000
+
+            if response.status_code != 200:
+                st.error(f"L'API a répondu {response.status_code} : "
+                         f"{response.text}")
+            else:
+                result = response.json()
+                col1, col2, col3 = st.columns(3)
+                col1.metric("Probabilité", f"{result['probability']:.5f}")
+                col2.metric("Verdict",
+                           "INSPECTER" if result["flagged"] else "OK")
+                col3.metric("Latence réseau", f"{elapsed:.0f} ms")
+
+                st.caption(
+                    "À comparer à la latence en mémoire mesurée sur l'onglet "
+                    "'Batch from a file' (colonne 'Scoring time'). L'écart "
+                    "entre les deux est le coût du transport, pas du modèle "
+                    "— c'est cet écart qui doit être évalué pour juger si une "
+                    "architecture client-serveur est acceptable pour un usage "
+                    "en atelier ou embarqué.")
