@@ -1,0 +1,7 @@
+debit_par_seconde,service_median_ms,service_95e_ms,attente_mediane_ms,attente_max_ms,croissance_ms_par_vehicule,soutenable
+5,48.2,81.3,0.4,117.0,0.01,True
+10,45.1,81.8,0.7,228.3,0.05,True
+20,44.0,75.3,223.4,754.5,-0.39,True
+40,48.3,83.9,4161.4,8520.5,28.49,False
+80,49.1,82.6,6493.9,12505.6,40.61,False
+160,50.7,90.0,7060.2,14623.8,48.65,False
