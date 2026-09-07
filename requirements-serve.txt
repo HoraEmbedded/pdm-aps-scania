@@ -8,6 +8,15 @@ numpy==1.26.4
 scikit-learn==1.5.2
 xgboost==3.4.1
 
+# The inference service (src/api.py) and its transport.
+# uvicorn is pinned to ensure the HTTP server is stable across builds.
+fastapi>=0.110,<1.0
+uvicorn[standard]==0.52.4
+
+# The dashboard now calls the API over HTTP (app/streamlit_app.py, tab
+# "Via API") instead of only loading the model in-process.
+requests>=2.31,<3.0
+
 # Free to move
 pandas>=2.0,<3.0
 joblib>=1.3
