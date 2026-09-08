@@ -136,6 +136,16 @@ def main() -> None:
                 "probability": result["probability"],
                 "flagged": result["flagged"],
             })
+            
+            # A hundred seconds of silence looks like a hang. Print sparingly:
+            # writing on every vehicle would itself cost time at high rates.
+            if index % 25 == 0 or index == args.n - 1:
+                ecoule = time.monotonic() - origin
+                print(f"  {index + 1:>4}/{args.n}  "
+                      f"{ecoule:>5.1f} s  "
+                      f"service {records[-1]['service_ms']:>6.1f} ms  "
+                      f"attente {records[-1]['queue_ms']:>6.1f} ms")
+            
     finally:
         # A failure mid-run must not lose the measurements already collected.
         if records:

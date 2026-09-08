@@ -75,6 +75,12 @@ class PredictionOut(BaseModel):
     flagged: bool
     risk_band: str
     threshold: float
+    # A client sending the wrong columns would otherwise get a perfectly
+    # plausible probability with no warning, which is the silent failure this
+    # project has spent its time avoiding.
+    n_expected_columns: int
+    n_missing_columns: int
+    n_unknown_columns: int
 
 
 @app.get("/health")
@@ -112,11 +118,15 @@ def predict(payload: VehicleReadings):
         # client looking for a fault in data that is fine.
         raise HTTPException(status_code=500, detail="inference failed") from exc
 
+    alignment = predictor.last_alignment_
     return PredictionOut(
         probability=result.probability,
         flagged=result.flagged,
         risk_band=result.risk_band,
         threshold=result.threshold,
+        n_expected_columns=len(predictor.raw_columns),
+        n_missing_columns=len(alignment["missing"]),
+        n_unknown_columns=len(alignment["extra"]),
     )
 
 
