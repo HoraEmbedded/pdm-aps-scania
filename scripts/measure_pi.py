@@ -48,7 +48,8 @@ def configuration(label: str) -> dict:
         "coeurs": lire("nproc"),
         "frequence_max_mhz": lire(
             "lscpu | grep 'CPU max MHz' | cut -d: -f2 | xargs"),
-        "memoire_totale": lire("free -h | awk 'NR==2{print $2}'"),
+        "memoire_totale": lire(
+            "awk '/MemTotal/ {printf \"%.1f GiB\", $2/1024/1024}' /proc/meminfo"),
         "systeme": lire(
             "grep PRETTY_NAME /etc/os-release | cut -d'\"' -f2"),
         "noyau": platform.release(),
@@ -136,9 +137,20 @@ def debit(predictor) -> dict:
 
     table = pd.DataFrame(lignes)
     table.to_csv(ROOT / "reports" / "throughput_pi.csv", index=False)
-    return {"par_lot": lignes,
-            "plafond_par_seconde": round(
-                1000 / table["par_vehicule_ms"].min(), 1)}
+
+    # Two ceilings, and confusing them overstates the system by a factor of
+    # five hundred. The service answers one vehicle per request, so its ceiling
+    # is the inverse of the single-vehicle latency. The batch figure describes
+    # a different job: scoring a fleet from a file in one go, where the fixed
+    # cost is amortised over a thousand rows.
+    unitaire = table.loc[table["taille_lot"] == 1, "par_vehicule_ms"].iloc[0]
+    par_lot = table["par_vehicule_ms"].min()
+
+    return {
+        "par_lot": lignes,
+        "plafond_unitaire_par_seconde": round(1000 / unitaire, 1),
+        "plafond_par_lot_par_seconde": round(1000 / par_lot, 1),
+    }
 
 
 def main() -> None:
@@ -169,7 +181,12 @@ def main() -> None:
     for ligne in deb["par_lot"]:
         print(f"  {ligne['taille_lot']:>6} {ligne['total_ms']:>10.1f} "
               f"{ligne['par_vehicule_ms']:>18.3f}")
-    print(f"\n  plafond : {deb['plafond_par_seconde']} véhicules par seconde")
+              
+              
+    print(f"\n  plafond, un véhicule par requête : "
+          f"{deb['plafond_unitaire_par_seconde']} par seconde")
+    print(f"  plafond, notation d'une flotte   : "
+          f"{deb['plafond_par_lot_par_seconde']} par seconde")
 
     resultat = {"configuration": config, "empreinte": emp,
                 "latence": lat, "debit": deb}

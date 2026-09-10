@@ -13,40 +13,41 @@
   "empreinte": {
     "modele_final_ko": 1092.9,
     "tous_modeles_ko": 18044.0,
-    "memoire_au_repos_mo": 184.7,
-    "memoire_en_charge_mo": 193.3
+    "memoire_au_repos_mo": 184.8,
+    "memoire_en_charge_mo": 193.2
   },
   "latence": {
     "n": 200,
-    "mediane_ms": 46.02,
-    "neuvieme_decile_ms": 68.48,
-    "95e_centile_ms": 75.3,
-    "maximum_ms": 96.71,
-    "ecart_type_ms": 11.71
+    "mediane_ms": 45.05,
+    "neuvieme_decile_ms": 60.01,
+    "95e_centile_ms": 70.19,
+    "maximum_ms": 94.93,
+    "ecart_type_ms": 10.77
   },
   "debit": {
     "par_lot": [
       {
         "taille_lot": 1,
-        "total_ms": 54.0,
-        "par_vehicule_ms": 53.974
+        "total_ms": 52.7,
+        "par_vehicule_ms": 52.667
       },
       {
         "taille_lot": 10,
-        "total_ms": 61.7,
-        "par_vehicule_ms": 6.166
+        "total_ms": 41.7,
+        "par_vehicule_ms": 4.166
       },
       {
         "taille_lot": 100,
-        "total_ms": 58.1,
-        "par_vehicule_ms": 0.581
+        "total_ms": 33.3,
+        "par_vehicule_ms": 0.333
       },
       {
         "taille_lot": 1000,
-        "total_ms": 79.4,
-        "par_vehicule_ms": 0.079
+        "total_ms": 57.6,
+        "par_vehicule_ms": 0.058
       }
     ],
-    "plafond_par_seconde": 12658.2
+    "plafond_unitaire_par_seconde": 19.0,
+    "plafond_par_lot_par_seconde": 17241.4
   }
 }
