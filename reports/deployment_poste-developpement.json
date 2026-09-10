@@ -1,0 +1,52 @@
+{
+  "configuration": {
+    "label": "poste-developpement",
+    "machine": "x86_64",
+    "processeur": "Intel(R) Core(TM) Ultra 7 155U",
+    "coeurs": "14",
+    "frequence_max_mhz": "4800.0000",
+    "memoire_totale": "30Gi",
+    "systeme": "Ubuntu 26.04.1 LTS",
+    "noyau": "7.0.0-30-generic",
+    "python": "3.12.13"
+  },
+  "empreinte": {
+    "modele_final_ko": 1092.9,
+    "tous_modeles_ko": 18044.0,
+    "memoire_au_repos_mo": 184.7,
+    "memoire_en_charge_mo": 193.3
+  },
+  "latence": {
+    "n": 200,
+    "mediane_ms": 46.02,
+    "neuvieme_decile_ms": 68.48,
+    "95e_centile_ms": 75.3,
+    "maximum_ms": 96.71,
+    "ecart_type_ms": 11.71
+  },
+  "debit": {
+    "par_lot": [
+      {
+        "taille_lot": 1,
+        "total_ms": 54.0,
+        "par_vehicule_ms": 53.974
+      },
+      {
+        "taille_lot": 10,
+        "total_ms": 61.7,
+        "par_vehicule_ms": 6.166
+      },
+      {
+        "taille_lot": 100,
+        "total_ms": 58.1,
+        "par_vehicule_ms": 0.581
+      },
+      {
+        "taille_lot": 1000,
+        "total_ms": 79.4,
+        "par_vehicule_ms": 0.079
+      }
+    ],
+    "plafond_par_seconde": 12658.2
+  }
+}
