@@ -1,7 +1,7 @@
-debit_par_seconde,service_median_ms,service_95e_ms,attente_mediane_ms,attente_max_ms,croissance_ms_par_vehicule,soutenable
-5,113.4,165.6,42.3,504.3,0.14,True
-10,97.6,143.2,754.1,2509.9,0.95,True
-20,112.5,160.1,10699.4,18325.9,62.6,False
-40,116.6,161.3,15115.3,27364.9,89.12,False
-80,71.5,128.0,11162.4,19482.1,61.71,False
-160,72.7,127.9,11988.2,21151.0,68.13,False
+configuration,debit_par_seconde,service_median_ms,attente_mediane_ms,pente_ms_par_vehicule,utilisation,confortable
+pi,1,289.3,0.1,-0.17,0.29,True
+pi,2,289.0,99.9,-1.11,0.58,True
+pi,3,289.2,591.3,-6.5,0.87,False
+pi,5,288.4,11536.3,101.34,1.44,False
+pi,8,289.7,18139.7,173.34,2.32,False
+pi,12,288.0,21714.6,211.84,3.46,False

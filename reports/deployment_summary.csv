@@ -1,0 +1,4 @@
+configuration,processeur,coeurs,modele_ko,memoire_mo,mediane_ms,neuvieme_decile_ms,pire_cas_ms,plafond_unitaire
+conteneur,Intel(R) Core(TM) Ultra 7 155U,14,1092.9,190.8,45.98,62.49,80.3,20.8
+poste-developpement,Intel(R) Core(TM) Ultra 7 155U,14,1092.9,192.5,50.92,64.88,93.05,19.3
+raspberry-pi-4,Cortex-A72,4,1092.9,190.4,277.13,284.46,375.95,3.8
