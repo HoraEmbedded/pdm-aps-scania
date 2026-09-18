@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """Produit les onze figures manquantes ou perimees du rapport.
 
+Les libelles portes sur les figures sont accentues : le rapport est en
+francais et les axes doivent l'etre aussi. La palette est celle definie en
+tete du fichier, et reprise a l'identique dans main.tex. Les messages de console restent
+sans accents, pour ne rien supposer de l'encodage du terminal.
+
 A copier n'importe ou dans le depot pdm-aps-scania (racine ou scripts/),
 puis :
 
@@ -49,23 +54,65 @@ if str(RACINE) not in sys.path:
     sys.path.insert(0, str(RACINE))
 
 # ------------------------------------------------------------------ style ----
-# Regles de PLAN_FIGURES.md : lisible en niveaux de gris, pas de couleur
-# porteuse d'information, distinction par trait, marqueur ou hachure.
+# Regles de PLAN_FIGURES.md, version couleur.
+#
+# Trois couleurs tenues sur toutes les figures, le reste en gris :
+#   ARBRE     modeles a base d'arbres
+#   LINEAIRE  modeles lineaires et perceptron
+#   ACCENT    ce qui est retenu, corrige ou souligne
+#
+# Les memes valeurs sont definies dans main.tex sous les noms arbres,
+# lineaires et accent, pour que les schemas TikZ du document et les
+# graphiques de ce script portent la meme palette.
+#
+# Aeration : pas de titre dans l'image, la legende LaTeX est en dessous ;
+# bordures d'axe superieure et droite retirees ; grille tres pale et
+# derriere les traces ; police serif accordee a celle du document.
+ARBRE = "#16606B"
+LINEAIRE = "#4A5B8C"
+ACCENT = "#C4562A"
+ENCRE = "#22262A"
+ARBRE_CLAIR = "#9CC3C8"
+LINEAIRE_CLAIR = "#AEB6CF"
+ACCENT_CLAIR = "#E8B39A"
+BANDE = "#EEF1F3"
+GRIS = ["#22262A", "#5C636B", "#98A0A8", "#D8DDE2"]
+TRAITS = ["-", "--", "-.", ":"]
+HACHURES = ["", "///", "...", "xxx"]
+
+# Carte sequentielle du blanc vers l'accent, pour les figures matricielles.
+from matplotlib.colors import LinearSegmentedColormap  # noqa: E402
+CARTE_COUT = LinearSegmentedColormap.from_list(
+    "cout", ["#FFFFFF", ACCENT_CLAIR, ACCENT, "#7A2F14"])
+
 plt.rcParams.update({
     "figure.dpi": 150,
     "savefig.dpi": 300,
     "savefig.bbox": "tight",
-    "font.size": 9,
+    "font.size": 9.5,
+    "font.family": "serif",
+    "font.serif": ["Linux Libertine O", "Libertinus Serif", "Linux Libertine",
+                   "DejaVu Serif"],
     "axes.grid": True,
-    "grid.color": "0.85",
-    "grid.linewidth": 0.6,
+    "axes.axisbelow": True,
+    "grid.color": "#E4E8EB",
+    "grid.linewidth": 0.7,
     "axes.spines.top": False,
     "axes.spines.right": False,
+    "axes.edgecolor": GRIS[1],
+    "axes.labelcolor": ENCRE,
+    "axes.labelpad": 6.0,
+    "text.color": ENCRE,
+    "xtick.color": GRIS[1],
+    "ytick.color": GRIS[1],
+    "xtick.labelcolor": ENCRE,
+    "ytick.labelcolor": ENCRE,
+    "xtick.direction": "out",
+    "ytick.direction": "out",
+    "legend.fontsize": 8.5,
+    "legend.frameon": False,
     "image.cmap": "Greys",
 })
-GRIS = ["0.15", "0.40", "0.60", "0.75"]
-TRAITS = ["-", "--", "-.", ":"]
-HACHURES = ["", "///", "...", "xxx"]
 
 COUT_FP, COUT_FN = 10, 500
 MARGE_DEPARTAGE = 2000
@@ -95,21 +142,21 @@ def regles_constantes(sortie):
     equilibre = COUT_FP / (COUT_FP + COUT_FN)
 
     fig, ax = plt.subplots(figsize=(5.4, 3.2))
-    ax.plot(taux * 100, rien, color=GRIS[0], ls=TRAITS[0], lw=1.3,
+    ax.plot(taux * 100, rien, color=ACCENT, ls=TRAITS[0], lw=1.8,
             label="ne rien signaler")
-    ax.plot(taux * 100, tout, color=GRIS[1], ls=TRAITS[1], lw=1.3,
+    ax.plot(taux * 100, tout, color=LINEAIRE, ls=TRAITS[1], lw=1.8,
             label="tout signaler")
-    ax.axvline(equilibre * 100, color="0.65", ls=":", lw=1)
-    ax.annotate(f"taux d'equilibre {equilibre * 100:.2f} %",
+    ax.axvline(equilibre * 100, color=GRIS[2], ls=":", lw=1.1)
+    ax.annotate(f"taux d'équilibre {equilibre * 100:.2f} %",
                 xy=(equilibre * 100 + 0.12, 0.72 * rien.max()), fontsize=8)
 
-    for t, nom in [(0.0167, "donnees reservees"), (0.0234, "test officiel")]:
+    for t, nom in [(0.0167, "données réservées"), (0.0234, "test officiel")]:
         y = min(t * n * COUT_FN, (1 - t) * n * COUT_FP)
-        ax.plot(t * 100, y, marker="o", color=GRIS[0], ms=5)
+        ax.plot(t * 100, y, marker="o", color=ENCRE, ms=5.5, zorder=5)
         ax.annotate(nom, xy=(t * 100 + 0.1, y * 1.06), fontsize=8)
 
-    ax.set_xlabel("taux de pannes du circuit d'air comprime, en pour cent")
-    ax.set_ylabel("cout total, base 16 000 vehicules")
+    ax.set_xlabel("taux de pannes du circuit d'air comprimé, en pour cent")
+    ax.set_ylabel("coût total, base 16 000 véhicules")
     ax.legend(frameon=False)
     _enregistrer(fig, "02_regles_constantes", sortie)
 
@@ -124,21 +171,24 @@ def panorama_publie(sortie):
 
     fig, ax = plt.subplots(figsize=(5.6, 3.4))
     for a, c in concours:
-        ax.plot(a, c, marker="s", color=GRIS[0], ms=6.5, ls="none")
+        ax.plot(a, c, marker="s", color=LINEAIRE, ms=6.5, ls="none")
     for a, c in posterieurs:
-        ax.plot(a, c, marker="o", mfc="none", mec=GRIS[0], ms=6.5, ls="none")
-    ax.plot(2026, 11370, marker="D", color=GRIS[0], ms=8, ls="none")
-    ax.annotate("travail present", xy=(2026, 11370), xytext=(2021.0, 17000),
+        ax.plot(a, c, marker="o", mfc="none", mec=GRIS[2], mew=1.3, ms=6.5,
+                ls="none")
+    ax.plot(2026, 11370, marker="D", color=ACCENT, ms=9, ls="none", zorder=5)
+    ax.annotate("travail présent", xy=(2026, 11370), xytext=(2021.0, 17000),
                 fontsize=8,
                 arrowprops=dict(arrowstyle="-", color="0.5", lw=0.7))
 
     ax.set_yscale("log")
-    ax.set_xlabel("annee de publication")
-    ax.set_ylabel("cout sur le jeu de test officiel")
-    ax.plot([], [], marker="s", color=GRIS[0], ls="none",
-            label="concours 2016, a l'aveugle")
-    ax.plot([], [], marker="o", mfc="none", mec=GRIS[0], ls="none",
-            label="posterieurs, etiquettes publiques")
+    ax.set_xlabel("année de publication")
+    ax.set_ylabel("coût sur le jeu de test officiel")
+    ax.plot([], [], marker="s", color=LINEAIRE, ls="none",
+            label="concours 2016, à l'aveugle")
+    ax.plot([], [], marker="o", mfc="none", mec=GRIS[2], mew=1.3, ls="none",
+            label="postérieurs, étiquettes publiques")
+    ax.plot([], [], marker="D", color=ACCENT, ls="none",
+            label="travail présent")
     ax.legend(frameon=False, fontsize=8, loc="lower left")
     _enregistrer(fig, "03_panorama_publie", sortie)
 
@@ -166,11 +216,11 @@ def absence_par_classe(sortie):
 
     x = np.arange(total)
     fig, ax = plt.subplots(figsize=(6.0, 3.6))
-    ax.axvspan(-0.5, n1 - 0.5, color="0.90", zorder=0)
-    ax.axvspan(total - n2 - 0.5, total - 0.5, color="0.90", zorder=0)
-    ax.plot(x, taux["rate_other"] * 100, color=GRIS[0], ls=TRAITS[0], lw=1.2,
+    ax.axvspan(-0.5, n1 - 0.5, color=BANDE, zorder=0)
+    ax.axvspan(total - n2 - 0.5, total - 0.5, color=BANDE, zorder=0)
+    ax.plot(x, taux["rate_other"] * 100, color=LINEAIRE, ls=TRAITS[0], lw=1.5,
             label="pannes d'un autre organe")
-    ax.plot(x, taux["rate_aps"] * 100, color=GRIS[2], ls=TRAITS[1], lw=1.2,
+    ax.plot(x, taux["rate_aps"] * 100, color=ACCENT, ls=TRAITS[1], lw=1.5,
             label="pannes du circuit d'air")
 
     haut = 96
@@ -181,7 +231,7 @@ def absence_par_classe(sortie):
 
     ax.set_xlim(-0.5, total - 0.5)
     ax.set_ylim(0, 100)
-    ax.set_xlabel("colonnes, triees par ecart de taux d'absence decroissant")
+    ax.set_xlabel("colonnes, triées par écart de taux d'absence décroissant")
     ax.set_ylabel("taux d'absence, en pour cent")
     ax.legend(frameon=False, fontsize=8, loc="center right")
     _enregistrer(fig, "05_absence_par_classe", sortie)
@@ -196,25 +246,34 @@ def classement_modeles(sortie):
 
     noms = {
         "Gradient boosting 8/0.1": "gradient boosting",
-        "Random forest 300/None/1": "foret aleatoire",
+        "Random forest 300/None/1": "forêt aléatoire",
         "Perceptron (64, 32)": "perceptron (64, 32)",
-        "Linear SVM C=0.001": "SVM lineaire",
-        "Logistic regression C=0.001": "regression logistique",
+        "Linear SVM C=0.001": "SVM linéaire",
+        "Logistic regression C=0.001": "régression logistique",
     }
     etiquettes = [noms.get(i, i) for i in frame.index]
 
     y = np.arange(len(frame))[::-1]
     fig, ax = plt.subplots(figsize=(5.6, 3.4))
+    # Une teinte par famille, l'accent reserve au modele retenu.
+    familles = {
+        "gradient boosting": ACCENT,
+        "forêt aléatoire": ARBRE,
+        "perceptron (64, 32)": LINEAIRE,
+        "SVM linéaire": LINEAIRE_CLAIR,
+        "régression logistique": LINEAIRE_CLAIR,
+    }
+    couleurs = [familles.get(e, GRIS[2]) for e in etiquettes]
     ax.barh(y, frame["cost"], xerr=frame["dispersion"], height=0.62,
-            color="0.78", edgecolor=GRIS[0], linewidth=0.8,
-            error_kw=dict(ecolor=GRIS[0], capsize=3, lw=0.9))
-    for yi, cout in zip(y, frame["cost"]):
-        ax.text(cout + 120, yi, f"{cout:,.0f}".replace(",", " "),
+            color=couleurs, edgecolor="white", linewidth=0.8,
+            error_kw=dict(ecolor=GRIS[1], capsize=3, lw=0.9))
+    for yi, (cout, ecart) in zip(y, zip(frame["cost"], frame["dispersion"])):
+        ax.text(cout + ecart + 180, yi, f"{cout:,.0f}".replace(",", " "),
                 va="center", fontsize=8)
 
     ax.set_yticks(y, etiquettes)
-    ax.set_xlabel("cout total, moyenne sur cinq plis, dispersion entre plis")
-    ax.set_xlim(0, frame["cost"].max() * 1.28)
+    ax.set_xlabel("coût total, moyenne sur cinq plis, dispersion entre plis")
+    ax.set_xlim(0, (frame["cost"] + frame["dispersion"]).max() * 1.22)
     ax.grid(axis="y", visible=False)
     _enregistrer(fig, "08_classement_modeles", sortie)
 
@@ -234,10 +293,10 @@ def seuil_en_echantillon(sortie, en_echantillon=41050, hors_echantillon=6714):
     x = np.arange(2)
     fig, ax = plt.subplots(figsize=(4.8, 3.3))
     ax.bar(x, [en_echantillon, hors_echantillon], width=0.52,
-           color=["0.80", "0.42"], edgecolor=GRIS[0], linewidth=0.9,
+           color=[GRIS[3], ACCENT], edgecolor=GRIS[2], linewidth=0.9,
            hatch=[HACHURES[1], HACHURES[0]])
-    ax.axhline(tout_signaler, color=GRIS[0], ls=TRAITS[2], lw=1.1)
-    ax.annotate(f"regle << tout signaler >> a l'echelle d'un pli, "
+    ax.axhline(tout_signaler, color=GRIS[1], ls=TRAITS[2], lw=1.1)
+    ax.annotate(f"règle « tout signaler » à l'échelle d'un pli, "
                 f"{tout_signaler:,.0f}".replace(",", " "),
                 xy=(-0.42, tout_signaler * 1.12), fontsize=7.5)
 
@@ -246,9 +305,9 @@ def seuil_en_echantillon(sortie, en_echantillon=41050, hors_echantillon=6714):
                 ha="center", fontsize=9)
 
     ax.set_yscale("log")
-    ax.set_xticks(x, ["seuil regle\nen echantillon",
-                      "seuil regle\nhors echantillon"])
-    ax.set_ylabel("cout total, foret aleatoire")
+    ax.set_xticks(x, ["seuil réglé\nen échantillon",
+                      "seuil réglé\nhors échantillon"])
+    ax.set_ylabel("coût total, forêt aléatoire")
     _enregistrer(fig, "08_seuil_en_echantillon", sortie)
 
 
@@ -284,11 +343,12 @@ def ablation(sortie):
 
     x = np.arange(len(ordre))
     fig, ax = plt.subplots(figsize=(5.2, 3.4))
-    ax.bar(x, moyennes, yerr=erreurs, width=0.5, color="0.78",
-           edgecolor=GRIS[0], linewidth=0.9,
-           error_kw=dict(ecolor=GRIS[0], capsize=4, lw=0.9))
-    ax.axhspan(base - plancher, base + plancher, color="0.92", zorder=0)
-    ax.annotate(f"plancher de detection, +/- {plancher:.0f} unites autour de V0",
+    ax.bar(x, moyennes, yerr=erreurs, width=0.5,
+           color=[LINEAIRE_CLAIR, ACCENT, LINEAIRE_CLAIR],
+           edgecolor="white", linewidth=0.9,
+           error_kw=dict(ecolor=GRIS[1], capsize=4, lw=0.9))
+    ax.axhspan(base - plancher, base + plancher, color=BANDE, zorder=0)
+    ax.annotate(f"plancher de détection, ± {plancher:.0f} unités autour de V0",
                 xy=(-0.44, base + plancher * 1.15), fontsize=7.5)
 
     for xi, m in zip(x, moyennes):
@@ -297,7 +357,7 @@ def ablation(sortie):
 
     ax.set_xticks(x, etiquettes)
     ax.set_ylim(base - plancher * 2.4, max(moyennes) + plancher * 2.0)
-    ax.set_ylabel("cout total, moyenne sur 30 mesures appariees")
+    ax.set_ylabel("coût total, moyenne sur 30 mesures appariées")
     _enregistrer(fig, "09_ablation", sortie)
 
 
@@ -326,21 +386,21 @@ def plan_factoriel(sortie):
     x = np.arange(4)
     fig, ax = plt.subplots(figsize=(5.4, 3.4))
     ax.bar(x, moyennes, yerr=erreurs, width=0.52,
-           color=["0.88", "0.76", "0.62", "0.44"],
-           edgecolor=GRIS[0], linewidth=0.9,
-           error_kw=dict(ecolor=GRIS[0], capsize=4, lw=0.9))
+           color=[GRIS[3], LINEAIRE_CLAIR, ARBRE_CLAIR, ACCENT],
+           edgecolor="white", linewidth=0.9,
+           error_kw=dict(ecolor=GRIS[1], capsize=4, lw=0.9))
     for xi, m in zip(x, moyennes):
         ax.text(xi, m + erreurs[0] * 1.5, f"{m:,.0f}".replace(",", " "),
                 ha="center", fontsize=8)
 
     centre = np.mean(moyennes)
-    ax.axhspan(centre - plancher, centre + plancher, color="0.93", zorder=0)
-    ax.annotate(f"plancher de detection, +/- {plancher:.0f} unites",
+    ax.axhspan(centre - plancher, centre + plancher, color=BANDE, zorder=0)
+    ax.annotate(f"plancher de détection, ± {plancher:.0f} unités",
                 xy=(-0.46, centre + plancher * 1.1), fontsize=7.5)
 
     ax.set_xticks(x, [e for _, e, _ in conditions])
     ax.set_ylim(centre - plancher * 1.9, centre + plancher * 1.9)
-    ax.set_ylabel("cout total, moyenne sur 30 mesures appariees")
+    ax.set_ylabel("coût total, moyenne sur 30 mesures appariées")
     _enregistrer(fig, "09_plan_factoriel", sortie)
 
 
@@ -354,24 +414,26 @@ def fonctions_perte(sortie):
     """
     frame = _lire_csv("loss_functions.csv", index_col=0).sort_values("cost")
     noms = {
-        "B, weighted cross-entropy": "B, entropie croisee\nponderee par les couts",
-        "A, reference": "A, reference,\nretenue",
-        "D, weighted focal loss": "D, focale\nponderee",
+        "B, weighted cross-entropy": "B, entropie croisée\npondérée par les coûts",
+        "A, reference": "A, référence,\nretenue",
+        "D, weighted focal loss": "D, focale\npondérée",
         "C, focal loss": "C, focale",
     }
     etiquettes = [noms.get(i, i) for i in frame.index]
 
     y = np.arange(len(frame))[::-1]
     fig, ax = plt.subplots(figsize=(5.4, 3.2))
-    ax.barh(y, frame["cost"], height=0.58, color="0.78",
-            edgecolor=GRIS[0], linewidth=0.9)
+    couleurs = [ACCENT if "retenue" in e else LINEAIRE_CLAIR
+                for e in etiquettes]
+    ax.barh(y, frame["cost"], height=0.58, color=couleurs,
+            edgecolor="white", linewidth=0.9)
     for yi, cout in zip(y, frame["cost"]):
         ax.text(cout + 40, yi, f"{cout:,.0f}".replace(",", " "),
                 va="center", fontsize=8)
 
     ax.set_yticks(y, etiquettes)
     ax.set_xlim(8000, frame["cost"].max() * 1.06)
-    ax.set_xlabel("cout total, moyenne sur les cinq plis d'une partition")
+    ax.set_xlabel("coût total, moyenne sur les cinq plis d'une partition")
     ax.grid(axis="y", visible=False)
     _enregistrer(fig, "09_fonctions_perte", sortie)
 
@@ -389,23 +451,27 @@ def matrice_confusion(sortie):
     contributions = effectifs * couts
 
     fig, ax = plt.subplots(figsize=(4.6, 3.6))
-    ax.imshow(np.log1p(contributions), cmap="Greys", vmin=0,
+    ax.imshow(np.log1p(contributions), cmap=CARTE_COUT, vmin=0,
               vmax=np.log1p(contributions.max()) * 1.35)
     for i in range(2):
         for j in range(2):
             contribution = contributions[i, j]
             texte = f"{effectifs[i, j]:,}".replace(",", " ")
             if contribution:
-                texte += f"\n{contribution:,} unites".replace(",", " ")
+                texte += f"\n{contribution:,} unités".replace(",", " ")
             else:
-                texte += "\nsans cout"
+                texte += "\nsans coût"
             ax.text(j, i, texte, ha="center", va="center", fontsize=9,
-                    color="white" if contribution > 5000 else "black")
+                    color="white" if contribution > 5000 else ENCRE)
 
-    ax.set_xticks([0, 1], ["predit sain", "predit defaillant"])
+    ax.set_xticks([0, 1], ["prédit sain", "prédit défaillant"])
     ax.set_yticks([0, 1], ["autre organe", "circuit d'air"])
-    ax.set_title(f"cout total {r['cost']:,}".replace(",", " "), fontsize=9)
+    # Pas de titre dans l'image : le cout total est porte par la legende
+    # LaTeX, pour ne pas repeter deux fois la meme information.
     ax.grid(False)
+    for cote in ax.spines.values():
+        cote.set_visible(False)
+    ax.tick_params(length=0)
     _enregistrer(fig, "10_matrice_confusion", sortie)
 
 
@@ -415,15 +481,15 @@ def latence(sortie):
     t = _lire_csv("latency_single.csv")["latency_ms"].to_numpy()
 
     fig, ax = plt.subplots(figsize=(5.2, 3.0))
-    ax.hist(t, bins=24, color="0.78", edgecolor=GRIS[0], linewidth=0.6)
-    for valeur, trait, etiquette in [
-        (np.median(t), TRAITS[0], "mediane"),
-        (np.percentile(t, 90), TRAITS[1], "neuvieme decile"),
+    ax.hist(t, bins=24, color=LINEAIRE_CLAIR, edgecolor="white", linewidth=0.8)
+    for valeur, trait, couleur, etiquette in [
+        (np.median(t), TRAITS[0], ACCENT, "médiane"),
+        (np.percentile(t, 90), TRAITS[1], ENCRE, "neuvième décile"),
     ]:
-        ax.axvline(valeur, color=GRIS[0], ls=trait, lw=1.2,
+        ax.axvline(valeur, color=couleur, ls=trait, lw=1.6,
                    label=f"{etiquette} : {valeur:.1f} ms")
 
-    ax.set_xlabel("temps de notation d'un vehicule, en millisecondes")
+    ax.set_xlabel("temps de notation d'un véhicule, en millisecondes")
     ax.set_ylabel("nombre de tirages")
     ax.legend(frameon=False, fontsize=8)
     _enregistrer(fig, "11_latence", sortie)
@@ -445,19 +511,19 @@ def grille_logistique(sortie):
     dispersion = [1428, 492, 193, 398]
 
     fig, ax = plt.subplots(figsize=(5.0, 3.1))
-    ax.errorbar(C, cout, yerr=dispersion, fmt="o-", color=GRIS[0],
-                ecolor="0.6", capsize=3, ms=5, lw=1.2,
-                label="grille enregistree")
-    ax.errorbar([0.001], [9596], yerr=[1222], fmt="o", mfc="none",
-                mec=GRIS[0], ecolor="0.6", capsize=3, ms=6, lw=1.2,
-                label="prolongement posterieur, retenu")
+    ax.errorbar(C, cout, yerr=dispersion, fmt="o-", color=LINEAIRE,
+                ecolor=GRIS[2], capsize=3, ms=5, lw=1.5,
+                label="grille enregistrée")
+    ax.errorbar([0.001], [9596], yerr=[1222], fmt="D", color=ACCENT,
+                ecolor=GRIS[2], capsize=3, ms=6.5, lw=1.5, zorder=5,
+                label="prolongement postérieur, retenu")
     ax.annotate("C = 0,001, hors grille initiale", xy=(0.001, 9596),
                 xytext=(0.0016, 10450), fontsize=8,
                 arrowprops=dict(arrowstyle="-", color="0.5", lw=0.7))
 
     ax.set_xscale("log")
-    ax.set_xlabel("parametre de regularisation C")
-    ax.set_ylabel("cout moyen sur cinq plis")
+    ax.set_xlabel("paramètre de régularisation C")
+    ax.set_ylabel("coût moyen sur cinq plis")
     ax.legend(frameon=False, fontsize=8)
     _enregistrer(fig, "A_grille_logistique", sortie)
 
