@@ -85,6 +85,30 @@ Five families, deliberately coarse tuning and comparable effort.
 
 Figures: [reports/test_result.json](reports/test_result.json).
 
+## Deployment
+
+Model exposed through a Streamlit demonstrator, containerised, then ported to a Raspberry Pi 4.
+
+**Inference chain.** The `Predictor` class bundles model, threshold and preparation behind a single interface. A manifest acts as a contract: threshold 0.002 37, ordered list of expected columns. Explicit reindexing, missing columns handled as missing readings.
+
+**Interface.** Three tabs: fleet scoring, single vehicle, frozen model view. Useful workshop output: inspection order sorted by probability, not a binary label. Threshold adjustable via slider to make the trade-off visible; frozen threshold remains the default.
+
+**Container.** Multi-stage image, non-privileged account, health check endpoint. TensorFlow absent: the frozen model is a tree ensemble.
+
+**Measurements.**
+
+| Configuration | Median latency |
+|---|---|
+| Development machine | 50.92 ms |
+| Container | 45.98 ms |
+| Raspberry Pi 4 | 277.13 ms |
+
+Serialised model: 1,093 kB. Resident memory: 190 to 192 MB. Footprint not limiting. Cost almost fixed: 48 ms per isolated vehicle, 0.043 ms on a batch of 1,000.
+
+**Porting.** Raspberry Pi 4, Debian 13, fanless. Twenty-one reference vectors recomputed on the board: identical predictions, zero deviation under 10⁻⁹. Sustainable throughput: 2 vehicles/s.
+
+**Reading.** Container costs nothing. Hardware target costs a factor of 5.4, invisible from a development machine. Network adds about 82 ms and a distribution tail.
+
 ## Difficulties encountered
 
 13 difficulties in weeks 1 and 2: 2 comprehension, 7 method errors, 5 technical obstacles.
