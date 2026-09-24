@@ -58,7 +58,7 @@ d'une certaine valeur du paramètre de régularisation. Le perceptron restait à
 Les valeurs de cette campagne sont périmées ; celles qui font foi sont dans
 `reports/benchmark.csv`.
 
-## Séances suivantes, dates non consignées
+## Séances suivantes
 
 Les entrées ci-dessous reconstituent le travail achevé, d'après les fichiers de
 `reports/`. Les dates de séance n'ont pas été notées sur le moment et ne sont
