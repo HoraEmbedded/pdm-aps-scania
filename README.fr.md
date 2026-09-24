@@ -1,189 +1,154 @@
-# Maintenance prédictive sur le jeu de données APS Scania
+# Maintenance prédictive - APS Scania
 
-Classification de pannes sensible au coût sur le système d'air comprimé de
-camions Scania. Cinq familles de modèles comparées sous un protocole figé avant
-le premier entraînement, puis une ouverture unique du jeu de test officiel.
+Classification de pannes sensible au coût sur le système d'air comprimé de camions Scania.
+Cinq familles de modèles comparées sous protocole figé avant tout entraînement. Ouverture unique du test officiel.
 
-Projet de quatrième année du cycle ingénieur, 10 semaines, encadré.
+Projet de 4e année du cycle ingénieur, 10 semaines, encadré. English: [README.md](README.md).
+
+## Résultat
 
 | | |
 |---|---|
-| Coût sur le jeu de test officiel | **11 370** |
-| Référence de la règle constante | 156 250 |
+| Coût (test officiel) | **11 370** |
+| Référence constante | 156 250 |
 | Économie | **92,7 %** |
-| Détection | 96,0 % (360 / 375 pannes) |
-| Pannes manquées / fausses alertes | 15 / 387 |
+| Détection | 96,0 % (360/375) |
+| Pannes manquées | 15 |
+| Fausses alertes | 387 |
 
-Face au podium du challenge IDA 2016, même jeu de test et même métrique :
-9 920, 10 900, **11 370**, 11 480. Troisième sur quatre, avec une recherche de
-paramètres volontairement sommaire.
+Podium IDA 2016, même test, même métrique : 9 920, 10 900, **11 370**, 11 480 → 3e sur 4.
+Écart avec la 4e place : 110 unités, toutes en fausses alertes (387 contre 398).
 
-Tous les chiffres cités dans ce dépôt existent dans `reports/`, qui fait foi.
-Aucun n'est saisi à la main.
+Chiffres : [reports/test_result.json](reports/test_result.json).
 
----
+## Problème
 
-## Le problème
+Camions déjà en atelier. Question : panne APS ou autre organe ?
+Une panne APS manquée laisse la vraie cause en place.
 
-Les camions sont **déjà en panne et déjà en atelier**. La question n'est pas
-« ce camion est-il en panne » mais « la panne vient-elle du système d'air
-comprimé (APS) ou d'un autre organe ». Une panne APS manquée signifie que le
-circuit d'air n'est jamais inspecté et que la cause réelle reste en place.
+170 capteurs anonymisés par camion. Scania 2016, challenge IDA.
 
-Trois propriétés commandent toutes les décisions de conception : un
-déséquilibre de classes (1,67 % de positifs en apprentissage, 2,34 % en test),
-des absences structurées (8,33 % de cellules vides, 8 colonnes au-delà de 65 %)
-et un coût asymétrique (fausse alerte 10, panne manquée 500, rapport 50:1).
+| Propriété | Valeur |
+|---|---|
+| Déséquilibre | 1,67 % train / 2,34 % test |
+| Absences | 8,33 % des cellules, 8 colonnes > 65 % |
+| Coût | fausse alerte 10, panne manquée 500 (50:1) |
 
-Deux conséquences contre-intuitives :
+Métrique = coût total Scania. Référence = moins chère des deux règles constantes.
+Elle change de camp selon le fichier (égalité à 1,96 % de positifs) :
 
-- **La référence à battre s'inverse entre les fichiers.** À un taux de positifs
-  de 1,96 % les deux règles constantes coûtent la même chose. En dessous, ne
-  rien signaler est moins cher ; au-dessus, tout signaler l'est. Sur le test
-  officiel, la référence est donc 156 250, obtenue en signalant toute la
-  flotte. Un chiffre de référence ne veut rien dire sans le fichier qui le
-  porte.
-- **L'objectif contractuel accepte un modèle dont 94,6 % des alertes seraient
-  fausses.** C'est un plancher de recevabilité, pas une cible. Trois niveaux
-  ont été adoptés : plancher 78 125, objectif de travail 20 000, excellence
-  10 000.
+| Fichier | Ne rien signaler | Tout signaler | Référence |
+|---|---|---|---|
+| Test (16 000) | 187 500 | 156 250 | tout signaler |
+| Réservé (12 000) | 100 000 | 118 000 | ne rien signaler |
 
----
+## Solution
 
-## La démarche
+Protocole figé avant le premier entraînement. Trois mesures, dans l'ordre, sans rétroaction.
 
-Trois mesures, dans l'ordre prescrit par le protocole. Aucune mesure postérieure
-n'a informé une mesure antérieure.
+**1. Banc d'essai — 5 plis sur 48 000 lignes.**
 
-1. **Banc d'essai, 5 plis sur 48 000 lignes d'apprentissage.** Les familles
-   arbres battent les familles linéaires de 2 725 unités, au-delà de la marge de
-   départage de 2 000 fixée à l'avance. Les deux premiers modèles, eux, sont
-   séparés de 372 unités : non départageables à ce stade.
-2. **Validation croisée répétée, 6 partitions, 30 mesures appariées.** Cette
-   étape **désigne les deux finalistes**, elle ne les arbitre pas.
-3. **Arbitrage sur 12 000 lignes réservées, ouvertes une seule fois.** Le coût
-   ne les départage pas et les pannes manquées sont à égalité ; le gradient
-   boosting est retenu sur les mesures répétées et sa dispersion plus faible.
+| Modèle | Coût | σ | Détection |
+|---|---|---|---|
+| Gradient boosting | 6 554 | 827 | 0,954 |
+| Forêt aléatoire | 6 926 | 804 | 0,963 |
+| Perceptron Keras | 8 494 | 1 780 | 0,940 |
+| SVM linéaire | 9 334 | 1 465 | 0,920 |
+| Régression logistique | 9 596 | 1 222 | 0,928 |
 
-Deux décisions, deux fichiers, deux marges : `reports/finalists.csv` désigne,
-`reports/arbitration.csv` arbitre. Les confondre attribuerait une décision au
-mauvais jeu de données.
+Arbres −2 725 vs linéaires (marge protocole : 2 000). Deux premiers à 372 : non départagés par 5 plis.
 
-Trois points portent le travail d'ingénierie : **l'absence traitée comme un
-signal** (deux groupes de colonnes de sens opposé, variables construites avant
-l'imputation qui détruirait le motif) ; **le rapport de coût qui n'entre qu'une
-seule fois** dans la chaîne (la pondération porte le coût, le seuil est mesuré,
-pas déduit — sinon le rapport serait appliqué deux fois, pour un effectif de
-2 501:1) ; **le seuil réglé hors échantillon** (le régler sur les lignes
-d'entraînement du pli faisait passer le coût de 6 926 à 41 050).
+**2. Validation croisée répétée — 6 partitions, 30 mesures.**
+Écart apparié 396 (plancher 354). Désigne les finalistes.
 
-Détail : `docs/technical_decisions.md`, `docs/evaluation_protocol.md`.
+**3. Arbitrage — 12 000 lignes réservées, ouvertes une fois.**
+GB 6 410, forêt 7 310. Écart 900 < marge 2 000.
+Retenu : **gradient boosting** (mesures répétées + dispersion plus faible).
 
-### Ce que les expériences n'ont pas montré
+**Trois points d'ingénierie :**
 
-Rapporté parce qu'elles ont été conduites, et qu'un résultat nul est un
-résultat. L'ablation des variables d'absence (six comparaisons appariées) ne
-produit **aucun gain mesurable**, et quatre fonctions de perte sur le
-perceptron ne se départagent pas. Le travail de préparation qui constitue le
-cœur intellectuel du projet ne paie pas — l'effet est plus petit que le bruit,
-ou les arbres retrouvent l'information seuls.
+- **Absence = signal.** 8 colonnes emboîtées → variable de profondeur, imputées à zéro. 56 non emboîtées → 9 indicatrices. Construites avant imputation.
+- **Coût entré une seule fois.** Pondération 50:1 porte le coût, seuil mesuré par balayage. Sinon rapport effectif 2 501:1.
+- **Seuil hors échantillon.** Validation croisée interne. Forêt : 41 050 → 6 926 (×5,9).
 
----
+## Difficultés
 
-## Difficultés rencontrées
+13 en semaines 1–2 : 2 de compréhension, 7 erreurs de méthode, 5 obstacles techniques.
 
-Treize difficultés recensées, dont sept erreurs de méthode. **Aucune n'était
-visible dans le résultat produit** : un document biaisé, un critère construit à
-l'envers ou une contradiction interne se lisent comme un travail abouti. Les
-obstacles techniques, eux, ont tous été résolus le jour même.
+**Erreurs de méthode** — invisibles dans le résultat produit :
+- Grille biaisée : un critère récompensait un jeu dégradé.
+- Candidat éliminé au mauvais étage (Engine Health).
+- Livrable sans sa première exigence (sélection des familles).
+- Recommandation contredisant son propre raisonnement (→ D-11).
+- Décision renversée sans être nommée.
+- Inversion recopiée d'une source officielle → règle : recalculer tout total fourni avec son détail.
+- Registre inadapté (fiches adressées à leur auteur).
 
-- **Une grille construite pour favoriser un candidat.** La première version
-  récompensait un jeu de données dégradé, au motif que le nettoyer démontrerait
-  des compétences. Ce n'était pas un critère de qualité mais une justification
-  après coup. → *Une méthode d'évaluation se construit avant de connaître les
-  candidats, et se teste en vérifiant qu'un autre que le favori peut l'emporter
-  sur au moins un critère.*
-- **Un raisonnement juste, non appliqué à sa propre recommandation.** Un
-  document expliquait pourquoi rééquilibrer déforme les probabilités, puis
-  recommandait deux sections plus loin d'appliquer deux corrections
-  simultanées, comptant deux fois l'asymétrie. → *La cohérence se vérifie en
-  confrontant les passages d'un même sujet, pas en relisant dans l'ordre.*
-- **Une inversion recopiée depuis une source officielle.** Les scores du
-  concours 2016 notés avec les deux types d'erreurs inversés : 199 150 au lieu
-  des 11 480 annoncés. → *Quand une source fournit un total et son détail,
-  refaire le calcul.*
-- **Incompatibilité Python / TensorFlow.** Ubuntu 26.04 livre Python 3.14,
-  TensorFlow s'arrête à 3.13. Sans détection, le blocage survenait en semaine 6,
-  après deux mois de travail.
-- **Un fichier lu sans erreur mais mal lu.** Des absences écrites `na` en texte
-  auraient fait traiter toutes les colonnes comme du texte et renvoyer zéro
-  absence partout. → *Une lecture qui réussit n'est pas nécessairement une
-  lecture correcte.*
-- **Une moyenne qui masquait la réalité.** 8,3 % d'absences en moyenne suggère
-  un jeu propre ; colonne par colonne, huit dépassent 65 %. → *Devant un
-  indicateur agrégé, regarder la distribution qui se cache derrière.*
+**Obstacles techniques** — résolus le jour même, sauf un :
+- Python 3.14 vs TensorFlow 3.13 → 3.13 installé en parallèle.
+- `na` en texte → colonnes traitées en texte, absences comptées à 0. Vérifier dimensions et types.
+- Moyenne 8,3 % masquant 8 colonnes > 65 % → second indicateur ajouté.
+- Faux nom : « Automotive Engine Health » = moteur de navire (IEEE DataPort 2022).
+- Fins de ligne Windows/Linux → dépôt = seule référence.
 
-Détail complet et règles de travail dans `docs/notes_de_methode.md`.
-
----
+Détail complet : [docs/method_notes.md](docs/method_notes.md).
 
 ## Perspectives
 
-**Pistes techniques.** Les 7 groupes de variables histogramme (70 colonnes) ne
-sont pas traités, et sont aussi les moins touchés par l'absence — en dériver des
-variables de forme est la première piste. Les variables d'absence ne produisent
-aucun gain mesurable : rejouer le plan sur un modèle linéaire testerait
-l'hypothèse de récupération par les arbres. Une seule grille d'hyperparamètres a
-été conservée, aucun script ne la rejoue.
+- **Groupes histogramme non traités** (70 colonnes, traitées comme compteurs). En dériver des variables de forme : première piste.
+- **Variables d'absence sans gain mesurable** (6 comparaisons appariées non significatives). Effet < bruit, ou arbres retrouvent l'information seuls.
+- **Une seule grille d'hyperparamètres enregistrée** (régression logistique), non rejouable.
+- **Seuil figé non optimal** : 11 370 vs 10 060 au seuil préféré a posteriori.
+- **Résultats publiés non indépendants** : test public depuis 2016, scores améliorés sur le même jeu fixe.
 
-**Limites.** Le seuil figé n'est pas le moins cher sur le test (11 370 contre
-10 060 au seuil que le recul préfère) ; le seuil figé est le résultat, l'autre
-un diagnostic. Et une réserve à porter au rapport : les réponses du test étant
-publiques depuis 2016, les scores publiés s'améliorent régulièrement sur ce
-même jeu fixe (10 140 en 2018, 6 050 en 2019, 3 440 en 2024). Le projet, qui
-s'impose une ouverture unique, compare donc un résultat honnête à des résultats
-dont l'indépendance n'est pas garantie.
-
----
-
-## Organisation et exécution
+## Organisation
 
 ```
-src/         bibliothèque importable, un seul niveau
-scripts/     points d'entrée (téléchargement, vérification, bancs d'essai)
-notebooks/   00 à 06, dans l'ordre du protocole
-tests/       40 tests sur 5 modules
-app/         le démonstrateur Streamlit
-docs/        protocole, décisions, journal, notes de méthode, bibliographie
-reports/     résultats et figures — font foi
-data/ models/  non versionnés, régénérés par script
+src/          config, seeding, cost, data, missingness, preprocessing,
+              evaluation, models, losses, inference
+scripts/      download, check_cost_function, build_dataset, verify,
+              paired_comparisons, finalists, calibration, latency, ...
+tests/        40 tests, 5 modules
+notebooks/    00 sélection → 06 test final
+app/          démonstrateur Streamlit
+docs/         protocole, décisions, journal, fiches, bibliographie
+reports/      tableaux de résultats — source de vérité
+data/, models/ non versionnés, régénérés par script
 ```
 
-TensorFlow ne prend pas en charge Python 3.14, la version 3.13 est requise.
+**Règle** : `reports/` fait foi. Aucun chiffre saisi à la main.
+
+## Démarrage
+
+Python 3.13 requis (TF ne supporte pas 3.14). L'image conteneur n'en a pas besoin.
 
 ```bash
 python3.13 -m venv .venv
 ./.venv/bin/pip install -r requirements.txt
-
-./scripts/download_data.sh                          # récupère data/raw
-./.venv/bin/python scripts/check_cost_function.py   # vérifier la métrique d'abord
-./.venv/bin/python scripts/build_dataset.py         # écrit data/processed
-./.venv/bin/python -m pytest                        # 40 tests
-./.venv/bin/python scripts/verify.py                # 23 vérifications
+./scripts/download_data.sh
+./.venv/bin/python scripts/check_cost_function.py
+./.venv/bin/python scripts/build_dataset.py
+./.venv/bin/python -m pytest
+./.venv/bin/python scripts/verify.py
 ```
 
-`check_cost_function.py` reconstitue le score publié du vainqueur 2016 depuis
-le détail de ses erreurs, ce qui rend les coûts comparables à la littérature.
-`build_dataset.py` vérifie dimensions, effectifs, groupes et absence de fuite,
-puis imprime une somme de contrôle (313 696) : toute modification silencieuse
-de la chaîne le fait échouer.
+Démonstrateur :
+
+```bash
+./scripts/fetch_models.sh
+docker compose up --build   # http://localhost:8501
+```
+
+## Exigences
+
+| ID | Exigence | État |
+|---|---|---|
+| EF01–EF08 | Chargement, chaîne, 4 modèles, Keras, protocole, choix, sérialisation, démonstrateur | fait |
+| EF09 | Flux temps réel | abandonné (optionnel) |
+| ENF01–ENF06 | Python/venv, Git, reproductibilité, sans GPU, Docker, latence < 1 s | fait |
 
 ## Sources
 
-APS Failure at Scania Trucks, Scania CV AB, 2016, UCI Machine Learning
-Repository, GPLv3. Fiche : `docs/dataset_scania.md`. Bibliographie :
-`docs/references.bib`, méthode de sélection dans
-`docs/bibliography_protocol.md`.
+APS Failure at Scania Trucks, Scania CV AB, 2016, UCI, GPLv3.
+[docs/dataset_scania.md](docs/dataset_scania.md) · [docs/references.bib](docs/references.bib)
 
-
-Si tu veux encore plus court, on peut descendre à ~50 lignes en supprimant les difficultés détaillées et en ne gardant qu'un renvoi vers `docs/`. Tu veux que je te fasse cette version minimale ?
