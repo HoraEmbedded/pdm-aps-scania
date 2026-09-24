@@ -85,6 +85,30 @@ Podium IDA 2016, même test, même métrique : 9 920, 10 900, **11 370**, 11 480
 
 Chiffres : [reports/test_result.json](reports/test_result.json).
 
+## Déploiement
+
+Modèle exposé via démonstrateur Streamlit, containerisé, puis porté sur Raspberry Pi 4.
+
+**Chaîne d'inférence.** La classe `Predictor` rassemble modèle, seuil et préparation derrière une interface unique. Un manifeste sert de contrat : seuil 0,002 37, liste ordonnée des colonnes attendues. Réindexation explicite, colonnes manquantes traitées comme relevés absents.
+
+**Interface.** Trois onglets : notation de flotte, véhicule isolé, consultation du modèle gelé. Sortie utile en atelier : ordre de passage trié par probabilité, pas une étiquette binaire. Seuil réglable par curseur pour rendre l'arbitrage visible ; le seuil figé reste la valeur par défaut.
+
+**Conteneur.** Image multi-étages, compte sans privilège, point de contrôle de santé. TensorFlow absent : le modèle gelé est un ensemble d'arbres.
+
+**Mesures.**
+
+| Configuration | Latence médiane |
+|---|---|
+| Poste de développement | 50,92 ms |
+| Conteneur | 45,98 ms |
+| Raspberry Pi 4 | 277,13 ms |
+
+Modèle sérialisé : 1 093 kB. Mémoire résidante : 190 à 192 MB. Empreinte non limitante. Coût presque fixe : 48 ms par véhicule isolé, 0,043 ms sur un lot de 1 000.
+
+**Portage.** Raspberry Pi 4, Debian 13, sans ventilateur. Vingt-et-un vecteurs de référence recalculés sur la carte : prédictions identiques, écart nul sous 10⁻⁹. Débit soutenable : 2 véhicules/s.
+
+**Lecture.** Le conteneur ne coûte rien. La cible matérielle coûte un facteur 5,4, invisible depuis un poste. Le réseau ajoute environ 82 ms et une queue de distribution.
+
 ## Difficultés rencontrées
 
 13 difficultés recensées en semaines 1 et 2 : 2 de compréhension, 7 erreurs de méthode, 5 obstacles techniques.
