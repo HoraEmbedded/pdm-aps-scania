@@ -182,6 +182,4 @@ docker compose up --build   # http://localhost:8501
 
 Jeu de données : APS Failure at Scania Trucks, Scania CV AB, 2016, UCI Machine Learning Repository, GPLv3. Fiche : [docs/dataset_scania.md](docs/dataset_scania.md). Bibliographie : [docs/references.bib](docs/references.bib).
 
----
 
-Veux-tu que je fasse la version anglaise maintenant, ou que j'ajuste le niveau de détail de certaines sections ?
