@@ -235,8 +235,7 @@ font foi, aucun chiffre d'un document n'est saisi à la main, et tout nombre
 cité par un document nomme le fichier qui le porte.
 
 Corrections apportées. Les cinq lignes du banc d'essai et leurs dispersions.
-L'écart entre les deux premiers, 372 et non 138. L'écart entre familles, 2 725
-et non 2 725. La somme de contrôle, 313 696 et non 313 695. Le compte des
+L'écart entre les deux premiers, 372 et non 138. L'écart entre familles est de 2 725 unités. La somme de contrôle, 313 696 et non 313 695. Le compte des
 vérifications de la fonction de coût, sept et non six. Le passage sur la
 stabilité de la forêt, réécrit. Les affirmations « le jeu de test n'a jamais été
 ouvert » et « aucun modèle sérialisé et aucun démonstrateur », supprimées.

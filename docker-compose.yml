@@ -12,7 +12,7 @@ services:
     command:
       ["uvicorn", "src.api:app", "--host", "0.0.0.0", "--port", "8000"]
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
       
     volumes:
       - ./scripts:/app/scripts:ro
@@ -28,7 +28,7 @@ services:
     restart: unless-stopped
 
   # The human-facing demonstrator. Talks to `api` over HTTP via API_URL,
-  # exactly like an external client would -- it no longer loads the model
+  # exactly like an external client would. The other views load the model
   # in-process. See app/streamlit_app.py, tab "Via API".
   demonstrator:
     build:
@@ -42,7 +42,7 @@ services:
     environment:
       - API_URL=http://api:8000
     ports:
-      - "8501:8501"
+      - "127.0.0.1:8501:8501"
     volumes:
       # Read-only: the container can read CSV files the user drops here
       - ./data/raw:/app/data/raw:ro

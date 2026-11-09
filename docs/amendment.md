@@ -23,9 +23,13 @@ environnement d'exécution identique sur toute machine.
 données temps réel, classée Optionnelle. Elle sera traitée si le planning le
 permet, et son abandon reste conforme au plan de repli.
 
-**Compromis assumé sur le livrable D8.** Les poids des modèles ne sont pas
-versionnés dans le dépôt Git, pour des raisons de volume, de licence et de
-principe. Ils sont copiés dans l'image et publiés séparément dans une
-distribution GitHub, récupérable par `scripts/fetch_models.sh`. En contexte
-industriel, un registre de modèles et un versionnage de données de type DVC
-rempliraient cette fonction.
+**Distribution actuelle.** Les poids du modèle ne sont pas versionnés dans
+Git. Le [guide de reproduction](reproduction.md) décrit la reconstruction
+locale du modèle retenu et de son prétraitement à partir des données UCI, puis
+la construction de l'image Docker.
+
+**Essais de débit ajoutés après l'étude.** Le projet contient une
+[simulation de requêtes](../scripts/flow_simulation.py) et des
+[mesures sur Raspberry Pi](../reports/flow/pi/). Ces essais évaluent la
+capacité de l'API. Ils ne constituent pas une acquisition de capteurs en temps
+réel ni une validation sur des véhicules en circulation.

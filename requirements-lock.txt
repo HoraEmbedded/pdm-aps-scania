@@ -153,3 +153,7 @@ Werkzeug==3.1.8
 wheel==0.48.0
 wrapt==2.3.0
 xgboost==3.4.1
+
+iniconfig==2.3.0
+pluggy==1.6.0
+pytest==8.4.2
