@@ -7,12 +7,13 @@ ARCHIVE="$RAW_DIR/aps_scania.zip"
 
 mkdir -p "$RAW_DIR"
 
-if [ -f "$RAW_DIR/aps_failure_training_set.csv" ]; then
+if [ -f "$RAW_DIR/aps_failure_training_set.csv" ] &&
+   [ -f "$RAW_DIR/aps_failure_test_set.csv" ]; then
   echo "[ok] dataset already present"
   exit 0
 fi
 
-wget -O "$ARCHIVE" "$URL"
+wget -nv -O "$ARCHIVE" "$URL"
 unzip -o "$ARCHIVE" -d "$RAW_DIR" > /dev/null
 find "$RAW_DIR" -mindepth 2 -name "aps_failure_*.csv" -exec mv -t "$RAW_DIR" {} + 2>/dev/null || true
 rm -f "$ARCHIVE"

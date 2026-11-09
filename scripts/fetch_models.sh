@@ -12,7 +12,8 @@ MODELS_DIR="$(cd "$(dirname "$0")/.." && pwd)/models"
 
 mkdir -p "$MODELS_DIR"
 
-if [ -f "$MODELS_DIR/final_model.json" ]; then
+if [ -f "$MODELS_DIR/final_model.json" ] &&
+   [ -f "$MODELS_DIR/gradient_boosting.joblib" ]; then
   echo "[ok] models already present in $MODELS_DIR"
   exit 0
 fi
@@ -22,14 +23,12 @@ URL="https://github.com/$REPO/releases/download/$TAG/models.tar.gz"
 
 if ! curl -fL -o /tmp/models.tar.gz "$URL"; then
   echo "[error] download failed."
-  echo "Fallback: rebuild the artefacts locally with"
-  echo "  python scripts/build_dataset.py"
-  echo "  jupyter nbconvert --execute --inplace notebooks/05_arbitration.ipynb"
+  echo "See docs/reproduction.md to rebuild the selected model and preprocessing locally."
   exit 1
 fi
 
 tar -xzf /tmp/models.tar.gz -C "$MODELS_DIR" --strip-components=1
 rm /tmp/models.tar.gz
 
-echo "[ok] models available:"
+echo "[ok] model weights available. See docs/reproduction.md for preprocessing."
 ls -lh "$MODELS_DIR"

@@ -301,16 +301,20 @@ st.sidebar.subheader(t["operating_point"])
 # the wrong operating point. A log-spaced grid containing the exact value fixes
 # it, and matches how the threshold actually behaves, over three decades.
 grid = sorted({round(v, 6) for v in np.logspace(-4, -0.3, 60)}
-              | {round(predictor.threshold, 6)})
+              | {predictor.threshold})
 
+st.session_state.setdefault("decision_threshold", predictor.threshold)
 threshold = st.sidebar.select_slider(
     t["threshold"], options=grid,
-    value=round(predictor.threshold, 6),
+    key="decision_threshold",
     format_func=lambda v: nombre(v, 5),
     help=t["threshold_help"])
 
-if st.sidebar.button(t["reset"], use_container_width=True):
-    st.rerun()
+def reset_threshold():
+    st.session_state.decision_threshold = predictor.threshold
+
+
+st.sidebar.button(t["reset"], use_container_width=True, on_click=reset_threshold)
 
 st.sidebar.divider()
 st.sidebar.subheader(t["cost_matrix"])

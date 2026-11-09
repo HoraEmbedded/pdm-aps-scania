@@ -32,7 +32,7 @@ def nested_block():
     ascending absence rate, so anything that tests it has to sort first.
     """
     rows = []
-    for level in [0, 0, 0, 1, 2, 3, 5, 8, 8, 8]:
+    for level in range(9):
         rows.append([1.0] * (8 - level) + [np.nan] * level)
     frame = pd.DataFrame(rows, columns=[f"c{i}" for i in range(8)])
     return frame[["c3", "c0", "c7", "c1", "c5", "c2", "c6", "c4"]]

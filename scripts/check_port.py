@@ -28,11 +28,13 @@ def main() -> None:
     predictor = Predictor.load()
 
     print("=== identité du modèle ===")
+    identity_matches = True
     for cle in ("model", "threshold", "n_columns"):
         attendu = reference[cle]
         obtenu = {"model": predictor.name,
                   "threshold": predictor.threshold,
                   "n_columns": len(predictor.raw_columns)}[cle]
+        identity_matches &= obtenu == attendu
         etat = "ok  " if obtenu == attendu else "ÉCART"
         print(f"  [{etat}] {cle:<12} attendu {attendu}, obtenu {obtenu}")
 
@@ -54,6 +56,9 @@ def main() -> None:
         for i in np.argsort(ecarts)[-5:][::-1]:
             print(f"    véhicule {i:>3} : attendu {attendues[i]:.10f}, "
                   f"obtenu {obtenues[i]:.10f}")
+        sys.exit(1)
+
+    if not identity_matches:
         sys.exit(1)
 
     print("\n  portage vérifié : les prédictions sont identiques")

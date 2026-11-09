@@ -199,7 +199,7 @@ Deux écarts sont mesurés dans ce projet, et il est tentant d'en faire un rappo
 Il ne faut pas.
 
 **L'écart entre familles de modèles est mesurable.** Moyenne des deux modèles à
-base d'arbres, 6 645, contre moyenne des deux modèles linéaires, 9 462 : 2 725
+base d'arbres, 6 740, contre moyenne des deux modèles linéaires, 9 465 : 2 725
 unités. C'est une différence de moyennes entre familles, pas une comparaison
 appariée, mais l'écart dépasse largement les dispersions individuelles et la
 marge de départage de 2 000 unités.
@@ -208,9 +208,8 @@ marge de départage de 2 000 unités.
 appariée V1 contre V0 donne 220 unités pour une erreur type de 329. Elle est
 déclarée non significative, comme les cinq autres.
 
-**Le rapport entre les deux n'existe donc pas.** Écrire que la préparation pèse
-treize fois moins que le choix du modèle, 2 725 contre 220, traite un nombre non
-significatif comme une quantité. Le 220 n'est pas un petit effet mesuré, c'est
+**Le rapport entre les deux n'existe donc pas.** Diviser l'écart de 2 725 unités par celui de 220 unités traiterait
+un résultat non significatif comme un effet établi. Le 220 n'est pas un petit effet mesuré, c'est
 un effet dont la mesure ne permet pas de dire s'il est positif, nul ou négatif.
 La formulation correcte est dissymétrique : le choix de la famille de modèles
 produit un effet mesurable, celui de la préparation non, à cette taille
@@ -238,7 +237,7 @@ exactement le coût de la règle constante "tout signaler" à l'échelle d'un pl
 parfait sur le rappel et sans valeur sur le critère qui compte.
 
 **Sur la forêt aléatoire**, dont le seuil ne dégénérait pas complètement, le
-coût passe de 41 050 à 6 926, soit le facteur 6,1.
+coût passe de 41 050 à 6 926, soit le facteur 5,9.
 
 **La correction.** Le seuil est réglé sur des probabilités hors échantillon,
 obtenues par une validation croisée interne à 3 plis à l'intérieur de chaque pli
@@ -247,7 +246,7 @@ externe.
 **L'ancienne version est conservée.** Le paramètre
 `evaluate(..., out_of_sample_threshold=False)` reproduit le comportement fautif.
 Ce n'est pas un reste de code : c'est la comparaison entre les deux qui produit
-le facteur 6,1, et elle doit rester rejouable.
+le facteur 5,9, et elle doit rester rejouable.
 
 ## Le balayage vectorisé du seuil
 
@@ -281,7 +280,6 @@ coût, `KerasPerceptron(weighted=False)` est obligatoire, sinon le rapport entre
 à nouveau deux fois dans la chaîne, ce qui est exactement l'erreur que D-11
 corrige.
 
-Résultat mesuré : les quatre variantes s'étalent de 8 368 à 9 210 pour des
-écarts types de 690 à 1 840. Aucun écart ne franchit le bruit. La configuration
+Résultat mesuré : les quatre variantes s'étalent de 8 454 à 9 124. Aucun écart ne franchit le bruit. La configuration
 de référence a été conservée par principe de simplicité
 (`reports/loss_functions.csv`).

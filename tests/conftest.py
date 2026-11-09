@@ -29,7 +29,7 @@ def pytest_collection_modifyitems(config, items):
     reasons = {
         "needs_raw": "data/raw absent, run scripts/download_data.sh",
         "needs_prepared": "data/processed absent, run scripts/build_dataset.py",
-        "needs_model": "models/ absent, run scripts/fetch_models.sh",
+        "needs_model": "models/ absent, run scripts/prepare_demo.py",
     }
     for item in items:
         for marker, missing in absent.items():

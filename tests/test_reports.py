@@ -98,7 +98,7 @@ def test_the_overfitting_gap_is_expected_over_the_fold_ratio():
 
 def test_calibration_mean_probability_tracks_the_base_rate():
     table = pd.read_csv(read("calibration.csv"), index_col=0)
-    assert (table["actual_rate"] == pytest.approx(0.016667, abs=1e-5)).all()
+    assert table["actual_rate"].to_numpy() == pytest.approx(0.016667, abs=1e-5)
     best = table["brier"].idxmin()
     assert best == "gradient boosting"
 

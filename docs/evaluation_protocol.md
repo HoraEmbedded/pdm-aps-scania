@@ -135,7 +135,7 @@ la partie d'apprentissage du pli. La première implémentation utilisait les
 probabilités prédites par le modèle sur ces mêmes lignes, que le modèle venait
 d'apprendre. Le réglage se fait désormais par validation croisée interne à 3
 plis à l'intérieur du pli. La prescription de la section 4 est inchangée, son
-implémentation est corrigée. Effet mesuré sur la forêt aléatoire : facteur 6,1
+implémentation est corrigée. Effet mesuré sur la forêt aléatoire : facteur 5,9
 sur le coût.
 
 **9.2. Détection des colonnes informatives sur l'apprentissage seul.** Elle
@@ -149,3 +149,20 @@ non dégénérés, vérifié sur 200 tirages par `scripts/check_cost_function.py
 
 Aucune de ces trois corrections ne modifie une prescription du protocole. Toutes
 les trois précèdent les résultats rapportés dans `reports/`.
+
+## 10. Périmètre des résultats publiés
+
+Le benchmark historique charge les 48 000 lignes déjà préparées. Les statistiques
+de prétraitement et l'encodage des valeurs manquantes utilisent donc des lignes
+qui deviennent ensuite des lignes d'évaluation dans certains plis. Le réglage
+du seuil, lui, utilise des prédictions hors pli. Pour une nouvelle campagne,
+ajuster les transformations à l'intérieur de chaque pli, y compris les plis
+internes utilisés pour régler le seuil. Les 12 000 lignes réservées et les
+16 000 lignes du test officiel n'ont pas servi à ajuster ce prétraitement.
+
+Sur les lignes réservées, le coût était de 6 410 pour le gradient boosting et de
+7 310 pour la forêt, avec six pannes manquées chacun. L'écart de 900 unités était
+inférieur à la marge de 2 000. Le gradient boosting a été retenu sur un critère
+complémentaire de dispersion des résultats répétés. Ce départage complète le
+protocole historique. Voir [arbitrage](../reports/arbitration.csv) et
+[synthèse des finalistes](../reports/finalists_summary.csv).

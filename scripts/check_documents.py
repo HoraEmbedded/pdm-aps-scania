@@ -17,7 +17,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-SEARCHED = ["docs", "README.md", "README.fr.md", "models/final_model.json"]
+SEARCHED = ["docs", "README.md", "README.fr.md"]
+HISTORICAL = {ROOT / "docs/journal.md"}
 
 STALE = {
     "6 576": "6 554, gradient boosting",
@@ -70,8 +71,6 @@ FORBIDDEN = {
     "compteur d'usage seul":
         "the factorial plan crosses depth and the sub-block flags. aa_000 is "
         "present in all four conditions.",
-    "V1_no_flags":
-        "rename to V1_no_flags: the condition drops the nine flags, not aa_000.",
 }
 
 
@@ -84,6 +83,8 @@ def main() -> None:
             continue
         files = sorted(path.rglob("*.md")) if path.is_dir() else [path]
         for file in files:
+            if file in HISTORICAL:
+                continue
             text = file.read_text(encoding="utf-8")
             for number, line in enumerate(text.splitlines(), start=1):
                 where = f"{file.relative_to(ROOT)}:{number}"
